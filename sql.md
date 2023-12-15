@@ -51,10 +51,10 @@ CREATE TABLE IF NOT EXISTS `mydb`.`order` (
   `mtime` VARCHAR(13) NULL,
   PRIMARY KEY (`meeting_id`))
 ENGINE = InnoDB
-COMMENT = '商品信息'
+COMMENT = '订单信息'
 
-CREATE TABLE IF NOT EXISTS `mydb`.`order` (
-  `order_id` INT NOT NULL,
+CREATE TABLE IF NOT EXISTS `mydb`.`quick_order` (
+  `quick_order_id` INT NOT NULL,
   `order_status` Int(2) COMMONT '订单状态',
   `order_id` Int(2) COMMONT '订单id',
   `order_text` text,
@@ -63,4 +63,4 @@ CREATE TABLE IF NOT EXISTS `mydb`.`order` (
   `mtime` VARCHAR(13) NULL,
   PRIMARY KEY (`meeting_id`))
 ENGINE = InnoDB
-COMMENT = '商品信息'
+COMMENT = '快照'
