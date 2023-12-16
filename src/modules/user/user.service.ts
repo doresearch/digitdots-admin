@@ -13,7 +13,7 @@ export class UserService {
   ) {}
 
   findOne(id: number): Promise<User> {
-    return this.usersRepository.findOneBy({ id });
+    return this.usersRepository.findOneBy({ uid: id });
   }
 
   findAll(query: any): Promise<User[]> {
@@ -42,12 +42,8 @@ export class UserService {
 
   create(createUserDto: CreateUserDto): Promise<User> {
     const user = new User();
-    user.username = createUserDto.username;
-    user.password = createUserDto.password;
-    user.nickname = createUserDto.nickname || createUserDto.username;
     user.role = createUserDto.role;
-    user.avatar = createUserDto.avatar;
-    user.active = 1;
+    user.password = createUserDto.password;
 
     return this.usersRepository.save(user);
   }
@@ -74,6 +70,6 @@ export class UserService {
   }
 
   findByUsername(username: string): Promise<User> {
-    return this.usersRepository.findOneBy({ username });
+    return this.usersRepository.findOneBy({ account: username });
   }
 }

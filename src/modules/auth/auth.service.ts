@@ -17,7 +17,7 @@ export class AuthService {
     if (user.password !== md5Password) {
       throw new UnauthorizedException();
     }
-    const payload = { username: user.username, userid: user.id };
+    const payload = { username: user.account, userid: user.uid };
     return {
       token: await this.jwtService.signAsync(payload),
     };

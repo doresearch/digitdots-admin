@@ -1,7 +1,23 @@
 export class CreateUserDto {
-  username: string;
-  password: string;
+  uid: number;
+
   role: string;
-  nickname: string;
-  avatar: string;
+
+  account: string;
+
+  password: string;
+
+  fname: string;
+
+  lname: string;
+
+  address: string;
+
+  invite_code: string;
+
+  status: number;
+
+  ctime: string;
+
+  mtime: string;
 }

@@ -1,26 +1,38 @@
 import { Entity, Column, Unique, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('admin_user')
+@Entity('user')
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
-  @Unique(['username'])
-  username: string;
-
-  @Column()
-  password: string;
-
-  @Column()
-  avatar: string;
+  uid: number;
 
   @Column()
   role: string;
 
   @Column()
-  nickname: string;
+  @Unique(['account'])
+  account: string;
 
   @Column()
-  active: number;
+  password: string;
+
+  @Column()
+  fname: string;
+
+  @Column()
+  lname: string;
+
+  @Column()
+  address: string;
+
+  @Column()
+  invite_code: string;
+
+  @Column()
+  status: number;
+
+  @Column()
+  ctime: string;
+
+  @Column()
+  mtime: string;
 }

@@ -11,27 +11,28 @@ import { ContentsModule } from './modules/contents/contents.module';
 import { MenuModule } from './modules/menu/menu.module';
 import { getMysqlUsernameAndPassword } from './utils';
 
-const { username, password } = getMysqlUsernameAndPassword();
+// const { username, password } = getMysqlUsernameAndPassword();
+const { username, password } = { username: 'root', password: '123456' };
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: '47.99.166.157',
+      host: '127.0.0.1',
       port: 3306,
       username,
       password,
-      database: 'vben-book-dev',
+      database: 'my_db',
       autoLoadEntities: true,
-      // synchronize: true,
+      synchronize: true,
       logging: true,
     }),
     UserModule,
-    RoleModule,
-    AuthModule,
-    BookModule,
-    MenuModule,
-    ContentsModule,
+    // RoleModule,
+    // AuthModule,
+    // BookModule,
+    // MenuModule,
+    // ContentsModule,
   ],
   controllers: [AppController],
   providers: [AppService, TestService],
