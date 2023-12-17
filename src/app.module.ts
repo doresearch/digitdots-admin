@@ -30,6 +30,7 @@ const { username, password } = { username: 'root', password: '12345678' };
     }),
     UserModule,
     MeetingModule,
+    // AuthModule,
     // RoleModule,
     // AuthModule,
     // BookModule,
