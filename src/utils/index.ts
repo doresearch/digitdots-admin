@@ -36,17 +36,15 @@ export function error(msg) {
 }
 
 export function wrapperResponse(p, msg) {
-  return p
-    .then((data) => success(data, msg))
-    .catch((err) => error(err.message));
+  return p.then(data => success(data, msg)).catch(err => error(err.message));
 }
 
 export function wrapperCountResponse(dataPromise, countPromise, msg) {
   return Promise.all([dataPromise, countPromise])
-    .then((res) => {
+    .then(res => {
       const [data, countArr] = res;
       const [count] = countArr;
       return successCount(data, count.count, msg);
     })
-    .catch((err) => error(err.message));
+    .catch(err => error(err.message));
 }

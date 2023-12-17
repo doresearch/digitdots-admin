@@ -5,16 +5,16 @@ export class Meeting {
   @PrimaryGeneratedColumn('uuid')
   meeting_id: string;
 
-  @Column('varchar', { length: 13, Comment: '订单时间, 格式时间戳' })
+  @Column('varchar', { length: 13, comment: '订单时间, 格式时间戳' })
   order_time: string;
 
-  @Column('varchar', { length: 32, Comment: '订单时间' })
+  @Column('varchar', { length: 32, comment: '订单时间' })
   teacher_id: string;
 
-  @Column('double', { Comment: '价格' })
+  @Column('double', { comment: '价格' })
   price: number;
 
-  @Column('int', { Comment: '状态，0 - 无效；1 - 有效' })
+  @Column('int', { comment: '状态，0 - 无效；1 - 有效' })
   status: number;
 
   @CreateDateColumn({ nullable: true })

@@ -1,38 +1,48 @@
-import { Entity, Column, Unique, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, Unique, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('user')
 export class User {
-  @PrimaryGeneratedColumn()
-  uid: number;
+  @PrimaryGeneratedColumn('uuid')
+  uid: string;
 
-  @Column()
-  role: string;
+  @Column('int', { comment: '1-admin 2-老师 3-学生' })
+  role: number;
 
-  @Column()
+  @Column('varchar', { length: 45 })
   @Unique(['account'])
   account: string;
 
-  @Column()
+  @Column('varchar', { length: 45 })
   password: string;
 
-  @Column()
+  @Column('varchar', { length: 45 })
   fname: string;
 
-  @Column()
+  @Column('varchar', { length: 45 })
   lname: string;
 
-  @Column()
+  @Column('varchar', { length: 255 })
   address: string;
 
-  @Column()
+  @Column('varchar', { length: 32 })
+  @Unique(['invite_code'])
   invite_code: string;
 
-  @Column()
+  @Column('varchar', { length: 32 })
+  invited_by_code: string;
+
+  @Column('int', { comment: '0-删除，1-有效' })
   status: number;
 
-  @Column()
-  ctime: string;
+  @CreateDateColumn({
+    name: 'create_time',
+    nullable: true,
+  })
+  create_time: Date;
 
-  @Column()
-  mtime: string;
+  @UpdateDateColumn({
+    name: 'update_time',
+    nullable: true,
+  })
+  update_time: Date | null;
 }

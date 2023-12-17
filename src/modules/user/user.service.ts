@@ -4,15 +4,16 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto } from './create-user.dto';
 import { DeleteResult } from 'typeorm/query-builder/result/DeleteResult';
+import { generateRandomCode } from 'src/utils/generateRandomCode';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
+    private readonly usersRepository: Repository<User>
   ) {}
 
-  findOne(id: number): Promise<User> {
+  findOne(id: string): Promise<User> {
     return this.usersRepository.findOneBy({ uid: id });
   }
 
@@ -43,7 +44,14 @@ export class UserService {
   create(createUserDto: CreateUserDto): Promise<User> {
     const user = new User();
     user.role = createUserDto.role;
+    user.account = createUserDto.account;
     user.password = createUserDto.password;
+    user.fname = createUserDto.fname;
+    user.lname = createUserDto.lname;
+    user.address = createUserDto.address;
+    user.invited_by_code = createUserDto.invited_by_code || '';
+    // user.invite_code = generateRandomCode(8);
+    user.status = 1;
 
     return this.usersRepository.save(user);
   }

@@ -1,7 +1,7 @@
 export class CreateUserDto {
   uid: number;
 
-  role: string;
+  role: 1 | 2 | 3;
 
   account: string;
 
@@ -15,9 +15,11 @@ export class CreateUserDto {
 
   invite_code: string;
 
-  status: number;
+  invited_by_code: string;
 
-  ctime: string;
+  status: 0 | 1;
 
-  mtime: string;
+  create_time: string;
+
+  update_time: string;
 }
