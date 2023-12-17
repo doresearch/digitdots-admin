@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TestService } from './test.service';
 import { UserModule } from './modules/user/user.module';
+import { MeetingModule } from './modules/meeting/meeting.module'
 import { RoleModule } from './modules/role/role.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BookModule } from './modules/book/book.module';
@@ -12,7 +13,7 @@ import { MenuModule } from './modules/menu/menu.module';
 import { getMysqlUsernameAndPassword } from './utils';
 
 // const { username, password } = getMysqlUsernameAndPassword();
-const { username, password } = { username: 'root', password: '123456' };
+const { username, password } = { username: 'root', password: '12345678' };
 
 @Module({
   imports: [
@@ -28,6 +29,8 @@ const { username, password } = { username: 'root', password: '123456' };
       logging: true,
     }),
     UserModule,
+    MeetingModule,
+    // AuthModule,
     // RoleModule,
     // AuthModule,
     // BookModule,

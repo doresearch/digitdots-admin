@@ -9,4 +9,4 @@ import { Meeting } from './meeting.entity';
   controllers: [MeetingController],
   providers: [MeetingService],
 })
-export class MenuModule {}
+export class MeetingModule {}
