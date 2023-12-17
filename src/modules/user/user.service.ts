@@ -42,6 +42,10 @@ export class UserService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<boolean> {
+    const findUser = await this.usersRepository.findOneBy({ account: createUserDto.account });
+    if (findUser) {
+      throw new Error('用户已存在');
+    }
     const user = new User();
     user.role = Number(createUserDto.role) || 3;
     user.account = createUserDto.account;
@@ -59,6 +63,10 @@ export class UserService {
   }
 
   async update(params) {
+    const findUser = await this.usersRepository.findOneBy({ account: params.account });
+    if (!findUser) {
+      throw new Error('用户不存在');
+    }
     const { account, role, password, fname, lname, address } = params;
     const setSql = [];
     if (role) {
@@ -87,14 +95,17 @@ export class UserService {
   }
 
   async findByUsername(accountName: string): Promise<any> {
-    const { account, fname, lname, address, invite_code } = await this.usersRepository.findOneBy({ account: accountName });
-
-    return {
-      account,
-      fname,
-      lname,
-      address,
-      invite_code,
-    };
+    try {
+      const { account, fname, lname, address, invite_code } = await this.usersRepository.findOneBy({ account: accountName });
+      return {
+        account,
+        fname,
+        lname,
+        address,
+        invite_code,
+      };
+    } catch (error) {
+      throw new Error('用户不存在');
+    }
   }
 }
