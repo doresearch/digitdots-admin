@@ -42,16 +42,20 @@ COMMENT = '商品信息'
 CREATE TABLE IF NOT EXISTS `mydb`.`order` (
   `order_id` INT NOT NULL,
   <!-- 申诉：申诉理由很多中，取消订单，记录退款 -->
-  `order_status` INT(2) COMMONT '0 - 锁单（5min） 1000 - 下单（锁15min） 2000 - 支付完成  2001-支付成功 2002-支付失败 3000 - 交易完成 3001-交易成功 3002-交易失败',
+  `order_status` INT(2) COMMONT '0 - 锁单，预下单（5min） 1000 - 下单（锁15min） 2000 - 支付完成  2001-支付成功 2002-支付失败 3000 - 交易完成 3001-交易成功 3002-交易失败, 4000 - 取消订单',
   `push_status` INT(2) COMMONT '0 - 未push，1-已push',
   `seller_uid` VARCHAR(13) NULL,
   `buyer_uid` VARCHAR(13) NULL,
+  `meeting_id` VARCHAR(13) NULL,
+  `price` VARCHAR(13) NULL,
   `status` Int(2) COMMONT '0-删除，1-有效',
   `ctime` VARCHAR(13) NULL,
   `mtime` VARCHAR(13) NULL,
   PRIMARY KEY (`meeting_id`))
 ENGINE = InnoDB
 COMMENT = '订单信息'
+
+pre_order -> order -> order_status变更 -> quick_order
 
 CREATE TABLE IF NOT EXISTS `mydb`.`quick_order` (
   `quick_order_id` INT NOT NULL,
