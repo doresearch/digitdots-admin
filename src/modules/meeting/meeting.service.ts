@@ -9,8 +9,13 @@ export class MeetingService {
   ) {}
 
   // 通过老师id来查询会议
-  findByTeacherid(teacher_id) {
-    const sql = `select * from meeting WHERE status = 1 AND teacher_id='${teacher_id}' order by id asc`;
+  findByTeacherid(body) {
+    if (!body.teacherId) {
+      throw new Error('老师ID不能为空');
+    }
+
+    const sql = `select * from meeting WHERE status = 1 AND teacher_id='${body.teacherId}' order by order_time asc`;
+    console.log(sql);
     return this.menuRepository.query(sql);
   }
 
