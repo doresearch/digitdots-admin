@@ -15,7 +15,6 @@ export class MeetingService {
     }
 
     const sql = `select * from meeting WHERE status = 1 AND teacher_id='${body.teacherId}' order by order_time asc`;
-    console.log(sql);
     return this.menuRepository.query(sql);
   }
 
