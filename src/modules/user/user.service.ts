@@ -37,40 +37,49 @@ export class UserService {
     if (pageSize <= 0) {
       pageSize = 20;
     }
-    const sql = `SELECT id, username, avatar, role, nickname, active FROM admin_user ${where} limit ${pageSize} offset ${(page - 1) * pageSize}`;
+    const sql = `SELECT id, username, avatar, role, nickname, active FROM user ${where} limit ${pageSize} offset ${(page - 1) * pageSize}`;
     return this.usersRepository.query(sql);
   }
 
-  create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<boolean> {
     const user = new User();
-    user.role = createUserDto.role;
+    user.role = Number(createUserDto.role) || 3;
     user.account = createUserDto.account;
     user.password = createUserDto.password;
     user.fname = createUserDto.fname;
     user.lname = createUserDto.lname;
     user.address = createUserDto.address;
     user.invited_by_code = createUserDto.invited_by_code || '';
-    // user.invite_code = generateRandomCode(8);
+    user.invite_code = generateRandomCode(8);
     user.status = 1;
 
-    return this.usersRepository.save(user);
+    await this.usersRepository.save(user);
+
+    return true;
   }
 
-  update(params) {
-    // console.log(params);
-    const { username, nickname, active, role } = params;
+  async update(params) {
+    const { account, role, password, fname, lname, address } = params;
     const setSql = [];
-    if (nickname) {
-      setSql.push(`nickname="${nickname}"`);
-    }
-    if (active) {
-      setSql.push(`active="${active}"`);
-    }
     if (role) {
-      setSql.push(`role=${JSON.stringify(role)}`);
+      setSql.push(`role=${Number(role) !== 1 ? Number(role) : 3}`);
     }
-    const updateSql = `UPDATE admin_user SET ${setSql.join(',')} WHERE username="${username}"`;
-    return this.usersRepository.query(updateSql);
+    if (password) {
+      setSql.push(`password="${password}"`);
+    }
+    if (fname) {
+      setSql.push(`fname="${fname}"`);
+    }
+    if (lname) {
+      setSql.push(`lname="${lname}"`);
+    }
+    if (address) {
+      setSql.push(`address="${address}"`);
+    }
+    const updateSql = `UPDATE user SET ${setSql.join(',')} WHERE account="${account}"`;
+    await this.usersRepository.query(updateSql);
+
+    return true;
   }
 
   remove(id: number): Promise<DeleteResult> {

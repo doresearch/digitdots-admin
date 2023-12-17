@@ -41,6 +41,9 @@ dependencies:
   typeorm:
     specifier: ^0.3.16
     version: 0.3.17(mysql2@3.6.5)(ts-node@10.9.2)
+  uuid:
+    specifier: ^9.0.1
+    version: 9.0.1
   xml2js:
     specifier: ^0.6.0
     version: 0.6.2
