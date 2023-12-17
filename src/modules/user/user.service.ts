@@ -70,7 +70,7 @@ export class UserService {
     const { account, role, password, fname, lname, address } = params;
     const setSql = [];
     if (role) {
-      setSql.push(`role=${Number(role) !== 1 ? Number(role) : 3}`);
+      setSql.push(`role=${[2, 3].includes(Number(role)) ? Number(role) : findUser.role}`);
     }
     if (password) {
       setSql.push(`password="${password}"`);
