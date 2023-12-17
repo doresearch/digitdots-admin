@@ -86,7 +86,15 @@ export class UserService {
     return this.usersRepository.delete(id);
   }
 
-  findByUsername(username: string): Promise<User> {
-    return this.usersRepository.findOneBy({ account: username });
+  async findByUsername(accountName: string): Promise<any> {
+    const { account, fname, lname, address, invite_code } = await this.usersRepository.findOneBy({ account: accountName });
+
+    return {
+      account,
+      fname,
+      lname,
+      address,
+      invite_code,
+    };
   }
 }

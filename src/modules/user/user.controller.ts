@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { wrapperResponse } from '../../utils';
 
@@ -7,8 +7,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('info')
-  getUserByToken(@Req() request) {
-    return wrapperResponse(this.userService.findByUsername(request.user.username), '获取用户信息成功');
+  getUserByToken(@Query() query) {
+    return wrapperResponse(this.userService.findByUsername(query.account), '获取用户信息成功');
   }
 
   // @Get(':id')
