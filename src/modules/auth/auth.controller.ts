@@ -12,6 +12,6 @@ export class AuthController {
   @Post('login')
   @UseFilters(new HttpExceptionFilter())
   login(@Body() params) {
-    return wrapperResponse(this.authService.login(params.username, params.password), '登录成功');
+    return wrapperResponse(this.authService.login(params.account, params.password), '登录成功');
   }
 }

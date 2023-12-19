@@ -4,7 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TestService } from './test.service';
 import { UserModule } from './modules/user/user.module';
-import { MeetingModule } from './modules/meeting/meeting.module'
+import { MeetingModule } from './modules/meeting/meeting.module';
 import { RoleModule } from './modules/role/role.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BookModule } from './modules/book/book.module';
@@ -30,7 +30,7 @@ const { username, password } = { username: 'root', password: '12345678' };
     }),
     UserModule,
     MeetingModule,
-    // AuthModule,
+    AuthModule,
     // RoleModule,
     // AuthModule,
     // BookModule,

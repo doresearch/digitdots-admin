@@ -108,4 +108,16 @@ export class UserService {
       throw new Error('用户不存在');
     }
   }
+
+  async findPwdByUsername(accountName: string): Promise<any> {
+    try {
+      const { account, password } = await this.usersRepository.findOneBy({ account: accountName });
+      return {
+        account,
+        password,
+      };
+    } catch (error) {
+      throw new Error('用户不存在');
+    }
+  }
 }

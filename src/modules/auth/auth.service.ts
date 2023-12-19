@@ -11,9 +11,9 @@ export class AuthService {
   ) {}
 
   async login(username, password) {
-    const user = await this.userService.findByUsername(username);
-    const md5Password = md5(password).toUpperCase();
-    // console.log(user, md5Password);
+    const user = await this.userService.findPwdByUsername(username);
+    // const md5Password = md5(password).toUpperCase();
+    const md5Password = password;
     if (user.password !== md5Password) {
       throw new UnauthorizedException();
     }
