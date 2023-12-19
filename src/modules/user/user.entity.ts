@@ -21,17 +21,26 @@ export class User {
   @Column('varchar', { length: 45 })
   lname: string;
 
-  @Column('varchar', { length: 255 })
+  @Column('varchar', { length: 255, default: '' })
   address: string;
 
-  @Column('varchar', { length: 32 })
+  @Column('varchar', { length: 128, default: '' })
+  school: string;
+
+  @Column('varchar', { length: 128, default: '' })
+  major: string;
+
+  @Column('varchar', { length: 128, default: '' })
+  company: string;
+
+  @Column('varchar', { length: 32, default: '' })
   @Unique(['invite_code'])
   invite_code: string;
 
-  @Column('varchar', { length: 32 })
+  @Column('varchar', { length: 32, default: '' })
   invited_by_code: string;
 
-  @Column('int', { comment: '0-删除，1-有效' })
+  @Column('int', { comment: '0-删除，1-有效', default: 1 })
   status: number;
 
   @CreateDateColumn({

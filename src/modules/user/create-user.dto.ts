@@ -22,4 +22,10 @@ export class CreateUserDto {
   create_time: string;
 
   update_time: string;
+
+  company: string;
+
+  major: string;
+
+  school: string;
 }
