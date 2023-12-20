@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { wrapperResponse } from '../../utils';
+import { Public } from '../auth/public.decorator';
 
 @Controller('user')
 export class UserController {
@@ -26,6 +27,7 @@ export class UserController {
     return wrapperResponse(this.userService.update(body), '修改用户成功');
   }
 
+  @Public()
   @Post('create')
   create(@Body() body) {
     return wrapperResponse(this.userService.create(body), '新增用户成功');
