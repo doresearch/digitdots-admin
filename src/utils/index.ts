@@ -31,6 +31,7 @@ export function success(data, msg) {
 export function error(msg) {
   return {
     code: -1,
+    result: null,
     message: msg,
   };
 }

@@ -97,9 +97,10 @@ export class UserService {
 
   async findUserByUsername(accountName: string): Promise<any> {
     try {
-      const { account, fname, lname, address, invite_code } = await this.usersRepository.findOneBy({ account: accountName });
+      const { account, role, fname, lname, address, invite_code } = await this.usersRepository.findOneBy({ account: accountName });
       return {
         account,
+        role,
         fname,
         lname,
         address,
