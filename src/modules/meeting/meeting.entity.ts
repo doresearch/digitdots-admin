@@ -8,7 +8,7 @@ export class Meeting {
   @Column('varchar', { length: 13, comment: '订单时间, 格式时间戳' })
   order_time: string;
 
-  @Column('varchar', { length: 32, comment: '老师ID' })
+  @Column('varchar', { length: 48, comment: '老师ID' })
   teacher_id: string;
 
   @Column('double', { comment: '价格' })
