@@ -97,7 +97,7 @@ export class UserService {
 
   async findUserByUsername(accountName: string): Promise<any> {
     try {
-      const { account, role, fname, lname, address, invite_code } = await this.usersRepository.findOneBy({ account: accountName });
+      const { account, role, fname, lname, address, invite_code, uid } = await this.usersRepository.findOneBy({ account: accountName });
       return {
         account,
         role,
@@ -105,6 +105,7 @@ export class UserService {
         lname,
         address,
         invite_code,
+        uid,
       };
     } catch (error) {
       throw new Error('用户不存在');
