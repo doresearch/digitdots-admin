@@ -21,7 +21,8 @@ export class MeetingService {
   // 保存商品，没有meeting_id视为创建，有meeting_id视为更新
   async updateMetting(body) {
     const { teacherId } = body;
-    const meeting = JSON.parse(body.meeting);
+    // console.log(typeof body.meeting);
+    const meeting = body.meeting;
 
     if (!meeting) {
       throw new Error('预定时间不能为空');
@@ -57,7 +58,7 @@ export class MeetingService {
       }
 
       if (updates.length > 0) {
-        await Promise.all(
+        await Promise.allSettled(
           updates.map(item => {
             return new Promise(resolve => {
               transactionalEntityManager.createQueryBuilder().update(Meeting).set({ order_time: item.orderTime }).where('meeting_id = :meeting_id', { meeting_id: item.meetingId }).execute();
