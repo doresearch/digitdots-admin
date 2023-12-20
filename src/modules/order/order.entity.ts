@@ -5,10 +5,10 @@ export class Order {
   @PrimaryGeneratedColumn('uuid')
   order_id: string;
 
-  @Column('int' , {comment: '0 - 锁单，预下单（5min） 1000 - 下单（锁15min） 2000 - 支付完成  2001-支付成功 2002-支付失败 3000 - 交易完成 3001-交易成功 3002-交易失败, 4000 - 取消订单' })
+  @Column('int', { comment: '0 - 锁单，预下单（5min） 1000 - 下单（锁15min） 2000 - 支付完成  2001-支付成功 2002-支付失败 3000 - 交易完成 3001-交易成功 3002-交易失败, 4000 - 取消订单' })
   order_status: string;
 
-  @Column('int' , {comment: '0 - 未push，1-已push'})
+  @Column('int', { comment: '0 - 未push，1-已push' })
   push_status: string;
 
   @Column('varchar', { length: 13, comment: '订单时间, 格式时间戳' })
@@ -32,7 +32,6 @@ export class Order {
   @UpdateDateColumn({ nullable: true })
   mtime: Date | null;
 }
-
 
 // CREATE TABLE IF NOT EXISTS `mydb`.`order` (
 //   `order_id` INT NOT NULL,

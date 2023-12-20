@@ -1,11 +1,14 @@
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Meeting } from './meeting.entity';
+import { Order } from '../order/order.entity';
 
 export class MeetingService {
   constructor(
     @InjectRepository(Meeting)
-    private readonly menuRepository: Repository<Meeting>
+    private readonly meetingRepository: Repository<Meeting>,
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>
   ) {}
 
   // 通过老师id来查询会议
@@ -15,7 +18,7 @@ export class MeetingService {
     }
 
     const sql = `select * from meeting WHERE status = 1 AND teacher_id='${body.teacherId}' order by order_time asc`;
-    return this.menuRepository.query(sql);
+    return this.meetingRepository.query(sql);
   }
 
   // 保存商品，没有meeting_id视为创建，有meeting_id视为更新
@@ -43,7 +46,7 @@ export class MeetingService {
     const adds = meeting.filter(item => !item.meetingId);
     const updates = meeting.filter(item => item.meetingId);
     // 使用typeorm创建事务
-    this.menuRepository.manager.transaction(async transactionalEntityManager => {
+    await this.meetingRepository.manager.transaction(async transactionalEntityManager => {
       if (adds.length > 0) {
         const addsParams = adds.map(item => {
           return {
@@ -69,5 +72,14 @@ export class MeetingService {
       }
     });
     return '';
+  }
+
+  async deleteMetting(body) {
+    const orderded = await this.orderRepository.findOne({ where: { meeting_id: body.meetingId } });
+    if (orderded) {
+      return '该会议已被预定，不能删除';
+    }
+    await this.meetingRepository.update({ meeting_id: body.meetingId }, { status: 0 });
+    return '删除完毕';
   }
 }

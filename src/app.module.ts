@@ -11,6 +11,7 @@ import { BookModule } from './modules/book/book.module';
 import { ContentsModule } from './modules/contents/contents.module';
 import { MenuModule } from './modules/menu/menu.module';
 import { getMysqlUsernameAndPassword } from './utils';
+import { OrderModule } from './modules/order/order.module';
 
 // const { username, password } = getMysqlUsernameAndPassword();
 const { username, password } = { username: 'root', password: '12345678' };
@@ -31,6 +32,7 @@ const { username, password } = { username: 'root', password: '12345678' };
     UserModule,
     MeetingModule,
     AuthModule,
+    OrderModule,
     // RoleModule,
     // AuthModule,
     // BookModule,

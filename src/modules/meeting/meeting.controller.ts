@@ -15,4 +15,10 @@ export class MeetingController {
     // 没有meeting_id视为创建，有meeting_id视为更新
     return wrapperResponse(this.meetingService.updateMetting(body), '会议创建成功');
   }
+
+  @Post('/delete')
+  deleteOrders(@Body() body) {
+    // 没有meeting_id视为创建，有meeting_id视为更新
+    return wrapperResponse(this.meetingService.deleteMetting(body), '会议删除成功');
+  }
 }
