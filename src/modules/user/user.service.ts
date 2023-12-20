@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as md5 from 'md5';
 import { User } from './user.entity';
 import { CreateUserDto } from './create-user.dto';
 import { DeleteResult } from 'typeorm/query-builder/result/DeleteResult';
@@ -49,7 +50,7 @@ export class UserService {
     const user = new User();
     user.role = Number(createUserDto.role) || 3;
     user.account = createUserDto.account;
-    user.password = createUserDto.password;
+    user.password = md5(createUserDto.password).toUpperCase();
     user.fname = createUserDto.fname;
     user.lname = createUserDto.lname;
     user.address = createUserDto.address;
@@ -94,7 +95,7 @@ export class UserService {
     return this.usersRepository.delete(id);
   }
 
-  async findByUsername(accountName: string): Promise<any> {
+  async findUserByUsername(accountName: string): Promise<any> {
     try {
       const { account, fname, lname, address, invite_code } = await this.usersRepository.findOneBy({ account: accountName });
       return {
@@ -109,15 +110,7 @@ export class UserService {
     }
   }
 
-  async findPwdByUsername(accountName: string): Promise<any> {
-    try {
-      const { account, password } = await this.usersRepository.findOneBy({ account: accountName });
-      return {
-        account,
-        password,
-      };
-    } catch (error) {
-      throw new Error('用户不存在');
-    }
+  findByUsername(accountName: string): Promise<User> {
+    return this.usersRepository.findOneBy({ account: accountName });
   }
 }

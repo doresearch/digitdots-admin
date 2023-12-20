@@ -8,7 +8,7 @@ export class UserController {
 
   @Get('info')
   getUserByToken(@Query() query) {
-    return wrapperResponse(this.userService.findByUsername(query.account), '获取用户信息成功');
+    return wrapperResponse(this.userService.findUserByUsername(query.account), '获取用户信息成功');
   }
 
   // @Get(':id')
