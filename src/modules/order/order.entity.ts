@@ -5,7 +5,7 @@ export class Order {
   @PrimaryGeneratedColumn('uuid')
   order_id: string;
 
-  @Column('int', { comment: '0 - 锁单，预下单（5min） 1000 - 下单（锁15min） 2000 - 支付完成  2001-支付成功 2002-支付失败 3000 - 交易完成 3001-交易成功 3002-交易失败, 4000 - 取消订单' })
+  @Column('int', { comment: '0 - 锁单，预下单（5min） 1000 - 下单（锁15min）1001-待支付 2000 - 支付完成  2001-支付成功 2002-支付失败 3000 - 交易完成 3001-交易成功 3002-交易失败, 4000 - 取消订单' })
   order_status: string;
 
   @Column('int', { comment: '0 - 未push，1-已push' })
@@ -25,6 +25,8 @@ export class Order {
 
   @Column('int', { comment: '状态，0 - 无效；1 - 有效' })
   status: number;
+
+  // paypal信息
 
   @CreateDateColumn({ nullable: true })
   ctime: Date;
