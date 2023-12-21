@@ -17,6 +17,9 @@ export class Meeting {
   @Column('int', { comment: '状态，0 - 无效；1 - 有效' })
   status: number;
 
+  @Column('int', { comment: '0 - 未预定，1-已预定，不可删除', default: 0 })
+  order_status: number;
+
   @CreateDateColumn({ nullable: true })
   ctime: Date;
 

@@ -7,8 +7,6 @@ export class MeetingService {
   constructor(
     @InjectRepository(Meeting)
     private readonly meetingRepository: Repository<Meeting>,
-    @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>
   ) {}
 
   // 通过老师id来查询会议
@@ -75,9 +73,9 @@ export class MeetingService {
   }
 
   async deleteMetting(body) {
-    const orderded = await this.orderRepository.findOne({ where: { meeting_id: body.meetingId } });
-    if (orderded) {
-      return '该会议已被预定，不能删除';
+    const findOne = await this.meetingRepository.findOneBy({ meeting_id: body.meetingId });
+    if (findOne.order_status === 0) {
+      throw new Error('该会议已预定，不可删除');
     }
     await this.meetingRepository.update({ meeting_id: body.meetingId }, { status: 0 });
     return '删除完毕';
