@@ -5,20 +5,17 @@ import { error, wrapperResponse } from '../../utils';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  // order状态
+  // 预下单.
   // 锁会议 metting x -> 5min
-  @Post('/preOrder')
+  @Post('/createOrder')
   preOrder(@Body() body) {
-    // return wrapperResponse(
-    //   this.orderService.findByTeacherid(body),
-    //   '会议创建成功',
-    // );
+    return wrapperResponse(this.orderService.preCreateOrder(body), '会议创建成功');
   }
 
   // 锁会议 metting x -> 15min
   @Post('/buy')
   buy(@Body() body) {
-    //
+    return wrapperResponse(this.orderService.buy(body), '成功');
   }
 
   // paypal支付完成 -> 锁死会议
