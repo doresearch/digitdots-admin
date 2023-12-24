@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Meeting } from './meeting.entity';
 
@@ -7,6 +7,50 @@ export class MeetingService {
     @InjectRepository(Meeting)
     private readonly meetingRepository: Repository<Meeting>
   ) {}
+
+  findByMeetingId(body) {
+    const { meetingId } = body;
+    if (!meetingId) {
+      throw new Error('会议ID不能为空');
+    }
+
+    return new Promise((resolve, reject) => {
+      this.meetingRepository.manager.transaction(async (entityManager: EntityManager) => {
+        // 超过当前时间
+        const meeting = await entityManager
+          .getRepository(Meeting)
+          .createQueryBuilder('meeting')
+          .select(['order_time', 'teacher_id', 'price', 'lock_time', 'order_status', 'user.fname', 'user.lname', 'user.school', 'user.address', 'user.major', 'price'])
+          // .addSelect('fname', 'user.fname')
+          // .addSelect('lname', 'user.lname')
+          // .addSelect('school', 'user.school')
+          // .addSelect('address', 'user.address')
+          // .addSelect('major', 'user.major')
+          .where('meeting.meeting_id = :meetingId', { meetingId })
+          .andWhere('meeting.order_time > :currentTime', { currentTime: Date.now() })
+          .andWhere('meeting.status = :status', { status: 1 })
+          .leftJoin('user', 'user', 'meeting.teacher_id = user.uid')
+          .getRawOne();
+
+        if (meeting.lock_time > Date.now()) {
+          throw new Error('该会议已锁定，不可购买');
+        }
+
+        if (meeting.order_status === 1) {
+          throw new Error('该会议已预定，不可购买');
+        }
+
+        if (!meeting) {
+          throw new Error('会议不存在');
+        }
+
+        resolve(meeting);
+      });
+    });
+
+    // return this.meetingRepository.findOneBy({ meeting_id: meetingId }).leftJoinAndSelect('teacher', 'teacher');
+    // return this.meetingRepository.findOneBy({ meeting_id: meetingId }).join('teacher');
+  }
 
   // 通过老师id来查询会议
   findByTeacherid(body) {

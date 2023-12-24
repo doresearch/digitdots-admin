@@ -5,6 +5,11 @@ import { error, wrapperResponse } from '../../utils';
 export class MeetingController {
   constructor(private readonly meetingService: MeetingService) {}
 
+  @Post('/findByMeetingId')
+  findByMeetingId(@Body() body) {
+    return wrapperResponse(this.meetingService.findByMeetingId(body), '查询成功');
+  }
+
   @Post('/searchByTeacherId')
   searchByTeacherId(@Body() body) {
     return wrapperResponse(this.meetingService.findByTeacherid(body), '查询成功');
