@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { error, wrapperResponse } from '../../utils';
 @Controller('/order')
@@ -32,14 +32,14 @@ export class OrderController {
   }
 
   // 查询订单
-  @Post('/query/list')
+  @Get('/query/list')
   queryList(@Body() body) {
-    //
+    return wrapperResponse(this.orderService.getOrderList(body), '');
   }
 
   // 查询订单详情
-  @Post('/query/detail')
+  @Get('/query/detail')
   queryDetail(@Body() body) {
-    //
+    return wrapperResponse(this.orderService.getOrderInfoByOrderId(body.order_id), '');
   }
 }

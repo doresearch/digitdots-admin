@@ -12,6 +12,14 @@ export class OrderService {
     private readonly meetingRepository: Repository<Meeting>
   ) {}
 
+  getOrderInfoByOrderId(order_id: string) {
+    return this.orderRepository.findOneBy({ order_id });
+  }
+
+  getOrderList(body) {
+    return this.orderRepository.find();
+  }
+
   async preCreateOrder(orderInfo) {
     const { meeting_id, uid } = orderInfo;
     const findMeeting = await this.meetingRepository.findOneBy({ meeting_id });
@@ -27,6 +35,7 @@ export class OrderService {
     }
 
     try {
+      let order_id = 0;
       await this.orderRepository.manager.transaction(async transactionalEntityManager => {
         const now = Date.now().toString();
         const info = {
@@ -39,7 +48,8 @@ export class OrderService {
           price: findMeeting.price,
           status: 1,
         };
-        await transactionalEntityManager.createQueryBuilder().insert().into(Order).values(info).execute();
+        const data = await transactionalEntityManager.createQueryBuilder().insert().into(Order).values(info).execute();
+        order_id = data.identifiers[0].order_id;
         await transactionalEntityManager
           .createQueryBuilder()
           .update(Meeting)
@@ -50,13 +60,37 @@ export class OrderService {
           .where('meeting_id = :meeting_id', { meeting_id })
           .execute();
       });
-      return true;
+      // TODO:
+      return {
+        order_id,
+      };
     } catch (error) {
       throw new Error('下单失败');
     }
   }
 
   async buy(body) {
-    //
+    const { order_id } = body;
+    const findOrder = await this.getOrderInfoByOrderId(order_id);
+    if (!findOrder) {
+      throw new Error('订单不存在');
+    }
+    if (!(findOrder.status === 1 && findOrder.order_status === 1000)) {
+      throw new Error('订单无效');
+    }
+    const now = Date.now().toString();
+    const orderStatus = 1001;
+    try {
+      const updateSql = `UPDATE \`order\` SET order_status=${orderStatus}, order_time="${now}" WHERE order_id="${findOrder.order_id}"`;
+      await this.orderRepository.query(updateSql);
+      // TODO:
+      return {
+        ...findOrder,
+        order_time: now,
+        order_status: orderStatus,
+      };
+    } catch (error) {
+      throw new Error('订单支付失败');
+    }
   }
 }
