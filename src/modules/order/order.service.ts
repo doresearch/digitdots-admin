@@ -81,7 +81,7 @@ export class OrderService {
     const now = Date.now().toString();
     const orderStatus = 1001;
     try {
-      const updateSql = `UPDATE \`order\` SET order_status=${orderStatus}, order_time="${now}" WHERE order_id="${findOrder.order_id}"`;
+      const updateSql = `UPDATE \`order\` SET order_status=${orderStatus}, order_time="${now}" WHERE order_id="${findOrder.order_id}" AND order_time > ${now}`;
       await this.orderRepository.query(updateSql);
       // TODO:
       return {
