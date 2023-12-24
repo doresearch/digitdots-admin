@@ -40,8 +40,15 @@ export class OrderService {
           status: 1,
         };
         await transactionalEntityManager.createQueryBuilder().insert().into(Order).values(info).execute();
-        const updateSql = `UPDATE meeting SET lock_time=${now}, order_status=1 WHERE meeting_id="${meeting_id}"`;
-        await this.meetingRepository.query(updateSql);
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .update(Meeting)
+          .set({
+            lock_time: now,
+            order_status: 1,
+          })
+          .where('meeting_id = :meeting_id', { meeting_id })
+          .execute();
       });
       return true;
     } catch (error) {
