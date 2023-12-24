@@ -14,7 +14,7 @@ export class MeetingService {
       throw new Error('老师ID不能为空');
     }
     // Todo: 已经过了的时间不查询
-    const sql = `select * from meeting WHERE status = 1 AND teacher_id='${body.teacherId}' order by order_time asc`;
+    const sql = `select * from meeting WHERE status = 1 AND teacher_id='${body.teacherId}' AND order_time > ${Date.now()} order by order_time asc`;
     return this.meetingRepository.query(sql);
   }
 
