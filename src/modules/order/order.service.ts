@@ -70,7 +70,7 @@ export class OrderService {
           .values({
             order_id,
             order_status: orderStatus,
-            order_text: 'pre order',
+            order_text: 'The meeting order was created successfully',
           })
           .execute();
       });
@@ -112,7 +112,7 @@ export class OrderService {
           .values({
             order_id,
             order_status: orderStatus,
-            order_text: 'buy order',
+            order_text: 'Payment order created successfully',
           })
           .execute();
       });
