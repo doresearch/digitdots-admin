@@ -9,13 +9,13 @@ export class OrderController {
   // 锁会议 metting x -> 5min
   @Post('/createOrder')
   preOrder(@Body() body) {
-    return wrapperResponse(this.orderService.preCreateOrder(body), '会议创建成功');
+    return wrapperResponse(this.orderService.preCreateOrder(body), 'Meeting created successfully'); // 会议创建成功
   }
 
   // 锁会议 metting x -> 15min
   @Post('/buy')
   buy(@Body() body) {
-    return wrapperResponse(this.orderService.buy(body), '成功');
+    return wrapperResponse(this.orderService.buy(body), '');
   }
 
   // paypal支付完成 -> 锁死会议

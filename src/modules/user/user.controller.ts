@@ -9,7 +9,7 @@ export class UserController {
 
   @Get('info')
   getUserByToken(@Query() query) {
-    return wrapperResponse(this.userService.findUserByUsername(query.account), '获取用户信息成功');
+    return wrapperResponse(this.userService.findUserByUsername(query.account), '');
   }
 
   // @Get(':id')
@@ -24,13 +24,13 @@ export class UserController {
 
   @Post('update')
   update(@Body() body) {
-    return wrapperResponse(this.userService.update(body), '修改用户成功');
+    return wrapperResponse(this.userService.update(body), 'Account information updated'); // 修改账户信息成功.
   }
 
   @Public()
   @Post('create')
   create(@Body() body) {
-    return wrapperResponse(this.userService.create(body), '新增用户成功');
+    return wrapperResponse(this.userService.create(body), 'Account registered successfully'); // 注册账户成功.
   }
 
   // @Delete(':id')

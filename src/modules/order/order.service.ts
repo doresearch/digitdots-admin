@@ -25,13 +25,13 @@ export class OrderService {
     const findMeeting = await this.meetingRepository.findOneBy({ meeting_id });
     console.log(findMeeting);
     if (!findMeeting) {
-      throw new Error('会议不存在');
+      throw new Error('Meeting not found'); // 会议不存在
     }
     if (findMeeting.status !== 1) {
-      throw new Error('会议无效');
+      throw new Error('Invalid meeting'); // 会议无效
     }
     if (findMeeting.order_status === 1) {
-      throw new Error('会议已预定');
+      throw new Error('Meeting already scheduled'); // 会议已预定
     }
 
     try {
@@ -65,7 +65,7 @@ export class OrderService {
         order_id,
       };
     } catch (error) {
-      throw new Error('下单失败');
+      throw new Error('Failed to create meeting'); // 会议创建失败
     }
   }
 
@@ -73,10 +73,10 @@ export class OrderService {
     const { order_id } = body;
     const findOrder = await this.getOrderInfoByOrderId(order_id);
     if (!findOrder) {
-      throw new Error('订单不存在');
+      throw new Error('Order not found'); // 订单不存在
     }
     if (!(findOrder.status === 1 && findOrder.order_status === 1000)) {
-      throw new Error('订单无效');
+      throw new Error('Invalid order'); // 订单无效
     }
     const now = Date.now().toString();
     const orderStatus = 1001;
@@ -90,7 +90,7 @@ export class OrderService {
         order_status: orderStatus,
       };
     } catch (error) {
-      throw new Error('订单支付失败');
+      throw new Error('Order payment failed'); // 订单支付失败
     }
   }
 }
