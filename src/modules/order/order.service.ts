@@ -3,13 +3,16 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './order.entity';
 import { Meeting } from '../meeting/meeting.entity';
+import { QuickOrder } from './quick-order.entity';
 
 export class OrderService {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
     @InjectRepository(Meeting)
-    private readonly meetingRepository: Repository<Meeting>
+    private readonly meetingRepository: Repository<Meeting>,
+    @InjectRepository(QuickOrder)
+    private readonly quickOrderRepository: Repository<QuickOrder>
   ) {}
 
   getOrderInfoByOrderId(order_id: string) {
@@ -35,12 +38,13 @@ export class OrderService {
     }
 
     try {
-      let order_id = 0;
+      let order_id = '0';
+      const orderStatus = 1000;
       await this.orderRepository.manager.transaction(async transactionalEntityManager => {
         const now = Date.now().toString();
         const info = {
           ...orderInfo,
-          order_status: 1000,
+          order_status: orderStatus,
           push_status: 0,
           order_time: now,
           student_id: uid,
@@ -58,6 +62,16 @@ export class OrderService {
             order_status: 1,
           })
           .where('meeting_id = :meeting_id', { meeting_id })
+          .execute();
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .insert()
+          .into(QuickOrder)
+          .values({
+            order_id,
+            order_status: orderStatus,
+            order_text: 'pre order',
+          })
           .execute();
       });
       // TODO:
@@ -81,8 +95,27 @@ export class OrderService {
     const now = Date.now().toString();
     const orderStatus = 1001;
     try {
-      const updateSql = `UPDATE \`order\` SET order_status=${orderStatus}, order_time="${now}" WHERE order_id="${findOrder.order_id}" AND order_time > ${now}`;
-      await this.orderRepository.query(updateSql);
+      await this.orderRepository.manager.transaction(async transactionalEntityManager => {
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .update(Order)
+          .set({
+            order_status: orderStatus,
+            order_time: now,
+          })
+          .where('order_id = :order_id', { order_id })
+          .execute();
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .insert()
+          .into(QuickOrder)
+          .values({
+            order_id,
+            order_status: orderStatus,
+            order_text: 'buy order',
+          })
+          .execute();
+      });
       // TODO:
       return {
         ...findOrder,
