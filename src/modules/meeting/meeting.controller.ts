@@ -12,7 +12,12 @@ export class MeetingController {
 
   @Post('/searchByTeacherId')
   searchByTeacherId(@Body() body) {
-    return wrapperResponse(this.meetingService.findByTeacherid(body), '查询成功');
+    return wrapperResponse(this.meetingService.findByTeacherId(body), '查询成功');
+  }
+
+  @Post('/searchByTeacherIds')
+  searchByTeacherIds(@Body() body) {
+    return wrapperResponse(this.meetingService.findByTeacherIds(body), '查询成功');
   }
 
   @Post('/saveOrders')

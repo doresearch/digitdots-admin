@@ -47,19 +47,27 @@ export class MeetingService {
         resolve(meeting);
       });
     });
-
-    // return this.meetingRepository.findOneBy({ meeting_id: meetingId }).leftJoinAndSelect('teacher', 'teacher');
-    // return this.meetingRepository.findOneBy({ meeting_id: meetingId }).join('teacher');
   }
 
   // 通过老师id来查询会议
-  findByTeacherid(body) {
+  findByTeacherId(body) {
     if (!body.teacherId) {
       throw new Error('老师ID不能为空');
     }
     // Todo: 已经过了的时间不查询
     const sql = `select * from meeting WHERE status = 1 AND teacher_id='${body.teacherId}' AND order_time > ${Date.now()} order by order_time asc`;
     return this.meetingRepository.query(sql);
+  }
+
+  findByTeacherIds(body) {
+    if (Array.isArray(body.teacherIds)) {
+      const teacherIds = body.teacherIds.filter(item => item);
+      // 多个 teacherId 查询
+      const sql = `select * from meeting WHERE status = 1 AND teacher_id IN (${teacherIds.join(',')}) AND order_time > ${Date.now()} order by order_time asc`;
+      return this.meetingRepository.query(sql);
+    } else {
+      throw new Error('老师ID不能为空');
+    }
   }
 
   // 保存商品，没有meeting_id视为创建，有meeting_id视为更新
