@@ -36,7 +36,7 @@ export class MeetingService {
           throw new Error('该会议已锁定，不可购买');
         }
 
-        if (meeting.order_status === 1) {
+        if (meeting.order_status === 2) {
           throw new Error('该会议已预定，不可购买');
         }
 

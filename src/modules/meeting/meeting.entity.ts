@@ -20,7 +20,7 @@ export class Meeting {
   @Column('varchar', { length: 13, comment: '格式时间戳, 下单锁定，预下单，下单', default: 0 })
   lock_time: string;
 
-  @Column('int', { comment: '0 - 未预定，1-已预定，不可删除', default: 0 })
+  @Column('int', { comment: '0 - 未预定，1-已预定，不可删除, 2-已下支付单', default: 0 })
   order_status: number;
 
   @CreateDateColumn({ nullable: true })
