@@ -115,4 +115,9 @@ export class UserService {
   findByUsername(accountName: string): Promise<User> {
     return this.usersRepository.findOneBy({ account: accountName });
   }
+
+  async getAllTeacher() {
+    const sql = `SELECT uid, fname, lname, school, major, company FROM user WHERE role=2 and status=1`;
+    return this.usersRepository.query(sql);
+  }
 }

@@ -33,6 +33,12 @@ export class UserController {
     return wrapperResponse(this.userService.create(body), 'Account registered successfully'); // 注册账户成功.
   }
 
+  @Public()
+  @Post('getAllTeacher')
+  getAllTeacher(@Body() body) {
+    return wrapperResponse(this.userService.getAllTeacher(), '获取教师列表成功');
+  }
+
   // @Delete(':id')
   // remove(@Param('id', ParseIntPipe) id: number) {
   //   return this.userService.remove(id);
