@@ -61,9 +61,10 @@ export class MeetingService {
 
   findByTeacherIds(body) {
     if (Array.isArray(body.teacherIds)) {
-      const teacherIds = body.teacherIds.filter(item => item);
+      const teacherIds = body.teacherIds.filter(item => item).map(item => `'${item}'`);
       // 多个 teacherId 查询
       const sql = `select * from meeting WHERE status = 1 AND teacher_id IN (${teacherIds.join(',')}) AND order_time > ${Date.now()} order by order_time asc`;
+      console.log(sql);
       return this.meetingRepository.query(sql);
     } else {
       throw new Error('老师ID不能为空');
