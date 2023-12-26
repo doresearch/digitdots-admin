@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './order.entity';
 import { Meeting } from '../meeting/meeting.entity';
 import { QuickOrder } from './quick-order.entity';
+import schedule from 'node-schedule';
 
 export class OrderService {
   constructor(
@@ -21,6 +22,41 @@ export class OrderService {
 
   getOrderList(body) {
     return this.orderRepository.find();
+  }
+
+  async cancelOrder(order_id: string) {
+    const order = await this.orderRepository.findOneBy({ order_id });
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    try {
+      await this.orderRepository.manager.transaction(async transactionalEntityManager => {
+        const orderStatus = 1002;
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .update(Order)
+          .set({
+            order_status: orderStatus,
+          })
+          .where('order_id = :order_id', { order_id })
+          .execute();
+        await transactionalEntityManager.createQueryBuilder().update(Meeting).set({ order_status: 0, lock_time: 0 }).where('meeting_id = :meeting_id', { meeting_id: order.meeting_id }).execute();
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .insert()
+          .into(QuickOrder)
+          .values({
+            order_id,
+            order_status: orderStatus,
+            order_text: 'Automatically cancel orders',
+          })
+          .execute();
+      });
+    } catch (error) {
+      throw new Error('Service error');
+    }
+    return true;
   }
 
   async preCreateOrder(orderInfo) {
@@ -74,7 +110,10 @@ export class OrderService {
           })
           .execute();
       });
-      // TODO:
+      const time = Date.now() + 5 * 60 * 1000;
+      schedule.scheduleJob(new Date(time), async () => {
+        this.cancelOrder(order_id);
+      });
       return {
         order_id,
       };
@@ -116,7 +155,10 @@ export class OrderService {
           })
           .execute();
       });
-      // TODO:
+      const time = Date.now() + 15 * 60 * 1000;
+      schedule.scheduleJob(new Date(time), async () => {
+        this.cancelOrder(order_id);
+      });
       return {
         ...findOrder,
         order_time: now,
