@@ -110,14 +110,15 @@ export class OrderService {
           })
           .execute();
       });
-      const time = Date.now() + 5 * 60 * 1000;
-      schedule.scheduleJob(new Date(time), async () => {
-        this.cancelOrder(order_id);
-      });
+      // const time = Date.now() + 5 * 60 * 1000;
+      // schedule.scheduleJob(new Date(time), () => {
+      //   this.cancelOrder(order_id);
+      // });
       return {
         order_id,
       };
     } catch (error) {
+      console.error(error);
       throw new Error('Failed to create meeting'); // 会议创建失败
     }
   }
@@ -155,10 +156,10 @@ export class OrderService {
           })
           .execute();
       });
-      const time = Date.now() + 15 * 60 * 1000;
-      schedule.scheduleJob(new Date(time), async () => {
-        this.cancelOrder(order_id);
-      });
+      // const time = Date.now() + 15 * 60 * 1000;
+      // schedule.scheduleJob(new Date(time), () => {
+      //   this.cancelOrder(order_id);
+      // });
       return {
         ...findOrder,
         order_time: now,
