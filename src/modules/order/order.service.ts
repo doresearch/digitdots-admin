@@ -21,7 +21,11 @@ export class OrderService {
   }
 
   getOrderList(body) {
-    return this.orderRepository.find();
+    const sql = `SELECT o.order_id, o.order_status, o.order_time, o.price, m.meeting_id, m.teacher_id, m.order_time meeting_time, u.fname, u.lname
+    FROM \`order\` o
+    JOIN meeting m ON o.meeting_id = m.meeting_id
+    JOIN user u ON m.teacher_id = u.uid`;
+    return this.orderRepository.query(sql);
   }
 
   async cancelOrder(order_id: string) {
