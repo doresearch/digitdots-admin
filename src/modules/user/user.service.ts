@@ -14,9 +14,9 @@ export class UserService {
     private readonly usersRepository: Repository<User>
   ) {}
 
-  findOne(id: string): Promise<User> {
-    return this.usersRepository.findOneBy({ uid: id });
-  }
+  // findOne(id: string): Promise<User> {
+  //   return this.usersRepository.findOneBy({ uid: id });
+  // }
 
   findAll(query: any): Promise<User[]> {
     console.log(query);
@@ -95,9 +95,9 @@ export class UserService {
     return this.usersRepository.delete(id);
   }
 
-  async findUserByUsername(accountName: string): Promise<any> {
+  async findOne(id: string): Promise<any> {
     try {
-      const { account, role, fname, lname, address, invite_code, uid } = await this.usersRepository.findOneBy({ account: accountName });
+      const { account, role, fname, lname, address, invite_code, uid } = await this.usersRepository.findOneBy({ uid: id });
       return {
         account,
         role,

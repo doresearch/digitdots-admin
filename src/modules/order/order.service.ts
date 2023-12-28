@@ -16,16 +16,33 @@ export class OrderService {
     private readonly quickOrderRepository: Repository<QuickOrder>
   ) {}
 
-  getOrderInfoByOrderId(order_id: string) {
-    return this.orderRepository.findOneBy({ order_id });
-  }
-
-  getOrderList(body) {
+  async getOrderInfoByOrderId(order_id: string) {
     const sql = `SELECT o.order_id, o.order_status, o.order_time, o.price, m.meeting_id, m.teacher_id, m.order_time meeting_time, u.fname, u.lname
     FROM \`order\` o
     JOIN meeting m ON o.meeting_id = m.meeting_id
-    JOIN user u ON m.teacher_id = u.uid`;
-    return this.orderRepository.query(sql);
+    JOIN user u ON m.teacher_id = u.uid
+    WHERE o.order_id = '${order_id}'`;
+    try {
+      const data = await this.orderRepository.query(sql);
+      return data[0];
+    } catch (error) {
+      throw new Error('Data error');
+    }
+  }
+
+  async getOrderList(uid) {
+    if (!uid) throw new Error('uid is empty');
+    const sql = `SELECT o.order_id, o.order_status, o.order_time, o.price, m.meeting_id, m.teacher_id, m.order_time meeting_time, u.fname, u.lname
+    FROM \`order\` o
+    JOIN meeting m ON o.meeting_id = m.meeting_id
+    JOIN user u ON m.teacher_id = u.uid
+    WHERE u.uid = '${uid}'`;
+    try {
+      const data = await this.orderRepository.query(sql);
+      return data;
+    } catch (error) {
+      throw new Error('Data error');
+    }
   }
 
   async cancelOrder(order_id: string) {

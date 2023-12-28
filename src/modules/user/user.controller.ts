@@ -1,15 +1,18 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { wrapperResponse } from '../../utils';
 import { Public } from '../auth/public.decorator';
+import { AuthGuard } from '../auth/auth.guard';
+import { GetUser } from './user.decorator';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @UseGuards(AuthGuard)
   @Get('info')
-  getUserByToken(@Query() query) {
-    return wrapperResponse(this.userService.findUserByUsername(query.account), '');
+  getUserByToken(@GetUser('uid') user) {
+    return wrapperResponse(this.userService.findOne(user.userid), '');
   }
 
   // @Get(':id')
