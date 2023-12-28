@@ -35,7 +35,7 @@ export class OrderService {
     const sql = `SELECT o.order_id, o.order_status, o.order_time, o.price, m.meeting_id, m.teacher_id, m.order_time meeting_time, u.fname, u.lname
     FROM \`order\` o
     JOIN meeting m ON o.meeting_id = m.meeting_id
-    JOIN user u ON m.teacher_id = u.uid
+    JOIN user u ON o.student_id = u.uid
     WHERE u.uid = '${uid}'`;
     try {
       const data = await this.orderRepository.query(sql);

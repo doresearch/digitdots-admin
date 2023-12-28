@@ -96,6 +96,9 @@ export class UserService {
   }
 
   async findOne(id: string): Promise<any> {
+    if (!id) {
+      throw new Error('token is required');
+    }
     try {
       const { account, role, fname, lname, address, invite_code, uid } = await this.usersRepository.findOneBy({ uid: id });
       return {
