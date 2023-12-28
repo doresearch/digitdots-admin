@@ -1,9 +1,8 @@
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { wrapperResponse } from '../../utils';
 import { Public } from '../auth/public.decorator';
 import { AuthGuard } from '../auth/auth.guard';
-import { GetUser } from './user.decorator';
 
 @Controller('user')
 export class UserController {
@@ -11,7 +10,8 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Get('info')
-  getUserByToken(@GetUser('uid') user) {
+  getUserByToken(@Request() request) {
+    const { user } = request;
     return wrapperResponse(this.userService.findOne(user.userid), '');
   }
 
