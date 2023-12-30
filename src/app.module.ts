@@ -12,6 +12,9 @@ import { ContentsModule } from './modules/contents/contents.module';
 import { MenuModule } from './modules/menu/menu.module';
 import { getMysqlUsernameAndPassword } from './utils';
 import { OrderModule } from './modules/order/order.module';
+import { MailService } from './mail/mail.service';
+import { OssService } from './oss/oss.service';
+import { OssModule } from './oss/oss.module';
 
 // const { username, password } = getMysqlUsernameAndPassword();
 const { username, password } = { username: 'root', password: '12345678' };
@@ -33,6 +36,7 @@ const { username, password } = { username: 'root', password: '12345678' };
     MeetingModule,
     AuthModule,
     OrderModule,
+    OssModule,
     // RoleModule,
     // AuthModule,
     // BookModule,
@@ -40,6 +44,8 @@ const { username, password } = { username: 'root', password: '12345678' };
     // ContentsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, TestService],
+  providers: [AppService, TestService, MailService, OssService],
 })
-export class AppModule {}
+export class AppModule {
+  constructor() {}
+}

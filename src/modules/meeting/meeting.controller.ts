@@ -1,10 +1,14 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
 import { MeetingService } from './meeting.service';
 import { error, wrapperResponse } from '../../utils';
 import { Public } from '../auth/public.decorator';
+import { MailService } from 'src/mail/mail.service';
 @Controller('meeting')
 export class MeetingController {
-  constructor(private readonly meetingService: MeetingService) {}
+  constructor(
+    private readonly meetingService: MeetingService,
+    private readonly mailService: MailService
+  ) {}
 
   @Public()
   @Post('/findByMeetingId')
@@ -34,5 +38,11 @@ export class MeetingController {
   deleteOrders(@Body() body) {
     // 没有meeting_id视为创建，有meeting_id视为更新
     return wrapperResponse(this.meetingService.deleteMetting(body), '会议删除成功');
+  }
+
+  @Public()
+  @Get('/test')
+  test() {
+    return wrapperResponse(this.mailService.sendEmail('test', 'test', 'test'), '发送成功');
   }
 }
