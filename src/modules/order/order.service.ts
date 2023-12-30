@@ -4,7 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './order.entity';
 import { Meeting } from '../meeting/meeting.entity';
 import { QuickOrder } from './quick-order.entity';
-import schedule from 'node-schedule';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const schedule = require('node-schedule');
 
 export class OrderService {
   constructor(
@@ -45,7 +46,7 @@ export class OrderService {
     }
   }
 
-  async cancelOrder(order_id: string) {
+  async cancelOrder(order_id: string, orderStatus: 1002 | 2002) {
     const order = await this.orderRepository.findOneBy({ order_id });
     if (!order) {
       throw new Error('Order not found');
@@ -53,7 +54,6 @@ export class OrderService {
 
     try {
       await this.orderRepository.manager.transaction(async transactionalEntityManager => {
-        const orderStatus = 1002;
         await transactionalEntityManager
           .createQueryBuilder()
           .update(Order)
@@ -62,7 +62,7 @@ export class OrderService {
           })
           .where('order_id = :order_id', { order_id })
           .execute();
-        await transactionalEntityManager.createQueryBuilder().update(Meeting).set({ order_status: 0, lock_time: 0 }).where('meeting_id = :meeting_id', { meeting_id: order.meeting_id }).execute();
+        await transactionalEntityManager.createQueryBuilder().update(Meeting).set({ order_status: 0, lock_time: '0' }).where('meeting_id = :meeting_id', { meeting_id: order.meeting_id }).execute();
         await transactionalEntityManager
           .createQueryBuilder()
           .insert()
@@ -83,7 +83,7 @@ export class OrderService {
   async preCreateOrder(orderInfo) {
     const { meeting_id, uid } = orderInfo;
     const findMeeting = await this.meetingRepository.findOneBy({ meeting_id });
-    console.log(findMeeting);
+
     if (!findMeeting) {
       throw new Error('Meeting not found'); // 会议不存在
     }
@@ -131,10 +131,10 @@ export class OrderService {
           })
           .execute();
       });
-      // const time = Date.now() + 5 * 60 * 1000;
-      // schedule.scheduleJob(new Date(time), () => {
-      //   this.cancelOrder(order_id);
-      // });
+      const time = new Date(Date.now() + 5 * 60 * 1000);
+      schedule.scheduleJob(time, () => {
+        this.cancelOrder(order_id, 1002);
+      });
       return {
         order_id,
       };
@@ -177,10 +177,10 @@ export class OrderService {
           })
           .execute();
       });
-      // const time = Date.now() + 15 * 60 * 1000;
-      // schedule.scheduleJob(new Date(time), () => {
-      //   this.cancelOrder(order_id);
-      // });
+      const time = Date.now() + 15 * 60 * 1000;
+      schedule.scheduleJob(new Date(time), () => {
+        this.cancelOrder(order_id, 2002);
+      });
       return {
         ...findOrder,
         order_time: now,
