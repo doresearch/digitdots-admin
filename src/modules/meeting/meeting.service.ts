@@ -32,16 +32,16 @@ export class MeetingService {
           .leftJoin('user', 'user', 'meeting.teacher_id = user.uid')
           .getRawOne();
 
-        if (meeting.lock_time > Date.now()) {
-          throw new Error('该会议已锁定，不可购买');
-        }
-
-        if (meeting.order_status === 2) {
-          throw new Error('该会议已预定，不可购买');
-        }
-
         if (!meeting) {
-          throw new Error('会议不存在');
+          reject('会议不存在');
+        }
+
+        if (meeting?.lock_time > Date.now()) {
+          reject('该会议已锁定，不可购买');
+        }
+
+        if (meeting?.order_status === 2) {
+          reject('该会议已预定，不可购买');
         }
 
         resolve(meeting);

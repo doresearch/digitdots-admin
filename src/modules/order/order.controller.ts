@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { error, wrapperResponse } from '../../utils';
+import { AuthGuard } from '../auth/auth.guard';
 @Controller('/order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
@@ -31,10 +32,12 @@ export class OrderController {
     );
   }
 
+  @UseGuards(AuthGuard)
   // 查询订单
   @Get('/query/list')
-  queryList(@Query() query) {
-    return wrapperResponse(this.orderService.getOrderList(query.uid), '');
+  queryList(@Request() request) {
+    const { user } = request;
+    return wrapperResponse(this.orderService.getOrderList(user.userid), '');
   }
 
   // 查询订单详情
