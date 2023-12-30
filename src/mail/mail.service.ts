@@ -19,7 +19,7 @@ export class MailService {
 
     const mailOptions = {
       from: 'yanxipanxi@gmail.com',
-      to: ['yanhu@digitdots.com', '1750772181@qq.com'],
+      to: ['yanhu@digitdots.com', 'halo@digitdots.com', 'jiangnan@digitdots.com', 'bowenli@digitdots.com'],
       subject: '这是一个邮件',
       text: '这是邮件',
     };

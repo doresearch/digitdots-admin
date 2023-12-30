@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { STS } from 'ali-oss';
+// import { STS } from 'ali-oss';
 
 @Injectable()
 export class OssService {
