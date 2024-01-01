@@ -8,6 +8,11 @@ import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const schedule = require('node-schedule');
 
+const baseURL = {
+  sandbox: 'https://api-m.sandbox.paypal.com',
+  production: 'https://api-m.paypal.com',
+};
+
 export class OrderService {
   constructor(
     @InjectRepository(Order)
@@ -17,6 +22,9 @@ export class OrderService {
     @InjectRepository(QuickOrder)
     private readonly quickOrderRepository: Repository<QuickOrder>
   ) {}
+
+  private accessTokenTime: number = 0;
+  private accessToken: string = '';
 
   async getOrderInfoByOrderId(order_id: string) {
     const sql = `SELECT o.order_id, o.order_status, o.order_time, o.price, m.meeting_id, m.teacher_id, m.order_time meeting_time, u.fname, u.lname
@@ -145,53 +153,88 @@ export class OrderService {
     }
   }
 
+  async getAccessToken() {
+    const now = Math.floor(Date.now() / 1000);
+    if (now < this.accessTokenTime) {
+      return this.accessToken;
+    }
+    const clientId = 'AacPoJJKCU-fdJ_bBA6XDwIcmn97Zjs5NZB-zSEp8EG054nqQmi4ZtESgYcyekNHOG26RxHzRHvvffWD';
+    const clientSecret = 'ENn99T9RoqWG5Fkn5_VQdgYZoJkF05pg8jjsWwF-XTrX9VZJI7fO1a-klxXDLne8zXoKc2QrtqmGEgJR';
+    try {
+      const response = await axios.post(
+        `${baseURL.sandbox}/v1/oauth2/token`,
+        {
+          grant_type: 'client_credentials',
+        },
+        {
+          auth: {
+            username: clientId,
+            password: clientSecret,
+          },
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        }
+      );
+      if (response?.data?.access_token) {
+        const expires = response.data.expires_in;
+        this.accessTokenTime = Math.floor(Date.now() / 1000) + expires;
+        this.accessToken = response.data.access_token;
+        return this.accessToken;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
   // use the orders api to create an order
   async createOrder(body) {
-    // create accessToken using your clientID and clientSecret
-    // for the full stack example, please see the Standard Integration guide
-    // https://developer.paypal.com/docs/multiparty/checkout/standard/integrate/
-    const accessToken = 'access_token$sandbox$3c68cygcrcfmy2ky$5c95daffbbcef24b53149bce5ed725d6';
+    const accessToken = await this.getAccessToken();
+    console.log('🚀 ~ file: order.service.ts:179 ~ OrderService ~ createOrder ~ accessToken:', accessToken);
+    if (!accessToken) {
+      throw new Error('Failed to get access token');
+    }
+
     try {
-      const response = await axios.post('https://api-m.sandbox.paypal.com/v2/checkout/orders', {
-        data: JSON.stringify({
-          purchase_units: [
-            {
-              amount: {
-                currency_code: 'USD',
-                value: '100.00',
-              },
-              reference_id: 'd9f80740-38f0-11e8-b467-0ed5f89f718b',
+      const data = JSON.stringify({
+        purchase_units: [
+          {
+            amount: {
+              currency_code: 'USD',
+              value: '100.00',
             },
-          ],
-          intent: 'CAPTURE',
-          payment_source: {
-            paypal: {
-              experience_context: {
-                payment_method_preference: 'IMMEDIATE_PAYMENT_REQUIRED',
-                payment_method_selected: 'PAYPAL',
-                brand_name: 'EXAMPLE INC',
-                locale: 'en-US',
-                landing_page: 'LOGIN',
-                shipping_preference: 'SET_PROVIDED_ADDRESS',
-                user_action: 'PAY_NOW',
-                return_url: 'https://example.com/returnUrl',
-                cancel_url: 'https://example.com/cancelUrl',
-              },
-            },
+            // reference_id: 'd9f80740-38f0-11e8-b467-0ed5f89f718b',
           },
-        }),
-        config: {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
+        ],
+        intent: 'CAPTURE',
+        // payment_source: {
+        //   paypal: {
+        //     experience_context: {
+        //       payment_method_preference: 'IMMEDIATE_PAYMENT_REQUIRED',
+        //       payment_method_selected: 'PAYPAL',
+        //       brand_name: 'EXAMPLE INC',
+        //       locale: 'en-US',
+        //       landing_page: 'LOGIN',
+        //       shipping_preference: 'SET_PROVIDED_ADDRESS',
+        //       user_action: 'PAY_NOW',
+        //       return_url: 'https://example.com/returnUrl',
+        //       cancel_url: 'https://example.com/cancelUrl',
+        //     },
+        //   },
+        // },
+      });
+      const response = await axios.post(`${baseURL.sandbox}/v2/checkout/orders`, data, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
         },
       });
       console.log(response);
       return response;
     } catch (error) {
       console.log(error);
-      throw new Error('Failed to create the order');
+      throw new Error('Failed to create the order.' + error.message);
     }
   }
 
