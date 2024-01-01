@@ -231,7 +231,7 @@ export class OrderService {
         },
       });
       console.log(response);
-      return response;
+      return response.data;
     } catch (error) {
       console.log(error);
       throw new Error('Failed to create the order.' + error.message);
