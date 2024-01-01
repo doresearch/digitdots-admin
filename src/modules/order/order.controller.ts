@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/
 import { OrderService } from './order.service';
 import { error, wrapperResponse } from '../../utils';
 import { AuthGuard } from '../auth/auth.guard';
+
 @Controller('/order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
@@ -17,6 +18,11 @@ export class OrderController {
   @Post('/buy')
   buy(@Body() body) {
     return wrapperResponse(this.orderService.buy(body), '');
+  }
+
+  @Post('/create-paypal-order')
+  createPaypalOrder(@Body() body) {
+    return wrapperResponse(this.orderService.createOrder(body), '');
   }
 
   // paypal支付完成 -> 锁死会议
