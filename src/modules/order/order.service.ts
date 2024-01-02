@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './order.entity';
@@ -25,6 +24,19 @@ export class OrderService {
 
   private accessTokenTime: number = 0;
   private accessToken: string = '';
+  private currencyCode: string = 'USD';
+
+  /**
+   * 美分转换美元
+   *
+   * @private
+   * @param {number} val
+   * @return {*}  {string}
+   * @memberof OrderService
+   */
+  private currencyConversion(val: number): string {
+    return `${val / 100}`;
+  }
 
   async getOrderInfoByOrderId(order_id: string) {
     const sql = `SELECT o.order_id, o.order_status, o.order_time, o.price, m.meeting_id, m.teacher_id, m.order_time meeting_time, u.fname, u.lname
@@ -188,56 +200,6 @@ export class OrderService {
     }
   }
 
-  // use the orders api to create an order
-  async createOrder(body) {
-    const accessToken = await this.getAccessToken();
-    console.log('🚀 ~ file: order.service.ts:179 ~ OrderService ~ createOrder ~ accessToken:', accessToken);
-    if (!accessToken) {
-      throw new Error('Failed to get access token');
-    }
-
-    try {
-      const data = JSON.stringify({
-        purchase_units: [
-          {
-            amount: {
-              currency_code: 'USD',
-              value: '100.00',
-            },
-            // reference_id: 'd9f80740-38f0-11e8-b467-0ed5f89f718b',
-          },
-        ],
-        intent: 'CAPTURE',
-        // payment_source: {
-        //   paypal: {
-        //     experience_context: {
-        //       payment_method_preference: 'IMMEDIATE_PAYMENT_REQUIRED',
-        //       payment_method_selected: 'PAYPAL',
-        //       brand_name: 'EXAMPLE INC',
-        //       locale: 'en-US',
-        //       landing_page: 'LOGIN',
-        //       shipping_preference: 'SET_PROVIDED_ADDRESS',
-        //       user_action: 'PAY_NOW',
-        //       return_url: 'https://example.com/returnUrl',
-        //       cancel_url: 'https://example.com/cancelUrl',
-        //     },
-        //   },
-        // },
-      });
-      const response = await axios.post(`${baseURL.sandbox}/v2/checkout/orders`, data, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      console.log(response);
-      return response.data;
-    } catch (error) {
-      console.log(error);
-      throw new Error('Failed to create the order.' + error.message);
-    }
-  }
-
   async buy(body) {
     const { order_id } = body;
     const findOrder = await this.getOrderInfoByOrderId(order_id);
@@ -282,6 +244,65 @@ export class OrderService {
       };
     } catch (error) {
       throw new Error('Order payment failed'); // 订单支付失败
+    }
+  }
+
+  // use the orders api to create an order
+  async createOrder(body) {
+    const accessToken = await this.getAccessToken();
+    console.log('🚀 ~ file: order.service.ts:179 ~ OrderService ~ createOrder ~ accessToken:', accessToken);
+    if (!accessToken) {
+      throw new Error('Failed to get access token');
+    }
+
+    const { cart } = body;
+    const orderId = cart[0].sku;
+
+    const order = await this.orderRepository.findOneBy({ order_id: orderId });
+
+    if (!order) {
+      throw new Error(`Order ${orderId} not found`);
+    }
+
+    try {
+      const data = JSON.stringify({
+        purchase_units: [
+          {
+            amount: {
+              currency_code: this.currencyCode,
+              value: this.currencyConversion(order.price),
+            },
+            // reference_id: 'd9f80740-38f0-11e8-b467-0ed5f89f718b',
+          },
+        ],
+        intent: 'CAPTURE',
+        // payment_source: {
+        //   paypal: {
+        //     experience_context: {
+        //       payment_method_preference: 'IMMEDIATE_PAYMENT_REQUIRED',
+        //       payment_method_selected: 'PAYPAL',
+        //       brand_name: 'EXAMPLE INC',
+        //       locale: 'en-US',
+        //       landing_page: 'LOGIN',
+        //       shipping_preference: 'SET_PROVIDED_ADDRESS',
+        //       user_action: 'PAY_NOW',
+        //       return_url: 'https://example.com/returnUrl',
+        //       cancel_url: 'https://example.com/cancelUrl',
+        //     },
+        //   },
+        // },
+      });
+      const response = await axios.post(`${baseURL.sandbox}/v2/checkout/orders`, data, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      console.log(response);
+      return response.data;
+    } catch (error) {
+      console.log(error);
+      throw new Error('Failed to create the order.' + error.message);
     }
   }
 }
