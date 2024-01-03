@@ -13,8 +13,8 @@ import { MenuModule } from './modules/menu/menu.module';
 import { getMysqlUsernameAndPassword } from './utils';
 import { OrderModule } from './modules/order/order.module';
 import { MailService } from './mail/mail.service';
-import { OssService } from './oss/oss.service';
-import { OssModule } from './oss/oss.module';
+import { OssService } from './modules/oss/oss.service';
+import { OssModule } from './modules/oss/oss.module';
 
 // const { username, password } = getMysqlUsernameAndPassword();
 const { username, password } = { username: 'root', password: '12345678' };
