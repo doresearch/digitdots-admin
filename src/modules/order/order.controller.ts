@@ -26,16 +26,9 @@ export class OrderController {
   }
 
   // paypal支付完成 -> 锁死会议
-  @Post('/payStatusCheck')
+  @Post('/capture')
   async payStatusCheck(@Body() body) {
-    return wrapperResponse(
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          resolve(true);
-        }, 5000);
-      }),
-      '会议创建成功'
-    );
+    return wrapperResponse(this.orderService.capture(body), 'Payment Successfully');
   }
 
   @UseGuards(AuthGuard)

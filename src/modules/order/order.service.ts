@@ -246,7 +246,6 @@ export class OrderService {
   // use the orders api to create an order
   async createOrder(body) {
     const accessToken = await this.getAccessToken();
-    console.log('🚀 ~ file: order.service.ts:179 ~ OrderService ~ createOrder ~ accessToken:', accessToken);
     if (!accessToken) {
       throw new Error('Failed to get access token');
     }
@@ -299,6 +298,32 @@ export class OrderService {
         },
       });
       await this.buy({ order_id: orderId });
+      console.log(response);
+      return response.data;
+    } catch (error) {
+      console.log(error);
+      throw new Error('Failed to create the order.' + error.message);
+    }
+  }
+
+  async capture(body) {
+    const accessToken = await this.getAccessToken();
+    if (!accessToken) {
+      throw new Error('Failed to get access token');
+    }
+
+    const { id } = body;
+    if (!id) {
+      throw new Error('Not Id')
+    }
+
+    try {
+      const response = await axios.post(`${baseURL.sandbox}/v2/checkout/orders/${id}/capture`, {}, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       console.log(response);
       return response.data;
     } catch (error) {
