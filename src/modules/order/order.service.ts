@@ -202,13 +202,7 @@ export class OrderService {
 
   async buy(body) {
     const { order_id } = body;
-    const findOrder = await this.getOrderInfoByOrderId(order_id);
-    if (!findOrder) {
-      throw new Error('Order not found'); // 订单不存在
-    }
-    if (!(findOrder.status === 1 && findOrder.order_status === 1000)) {
-      throw new Error('Invalid order'); // 订单无效
-    }
+
     const now = Date.now().toString();
     const orderStatus = 1001;
     try {
@@ -233,12 +227,14 @@ export class OrderService {
           })
           .execute();
       });
+
       const time = Date.now() + 15 * 60 * 1000;
       schedule.scheduleJob(new Date(time), () => {
         this.cancelOrder(order_id, 2002);
       });
+
       return {
-        ...findOrder,
+        order_id,
         order_time: now,
         order_status: orderStatus,
       };
@@ -259,9 +255,13 @@ export class OrderService {
     const orderId = cart[0].sku;
 
     const order = await this.orderRepository.findOneBy({ order_id: orderId });
-
+ 
     if (!order) {
       throw new Error(`Order ${orderId} not found`);
+    }
+  
+    if (!(order.status === 1 && order.order_status === 1000)) {
+      throw new Error('Invalid order'); // 订单无效
     }
 
     try {
@@ -298,6 +298,7 @@ export class OrderService {
           Authorization: `Bearer ${accessToken}`,
         },
       });
+      await this.buy({ order_id: orderId });
       console.log(response);
       return response.data;
     } catch (error) {
