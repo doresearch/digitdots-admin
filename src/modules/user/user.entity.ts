@@ -8,6 +8,9 @@ export class User {
   @Column('int', { comment: '1-admin 2-老师 3-学生' })
   role: number;
 
+  @Column('varchar', { length: 256, default: '' })
+  avator: string;
+
   @Column('varchar', { length: 45 })
   @Unique(['account'])
   account: string;

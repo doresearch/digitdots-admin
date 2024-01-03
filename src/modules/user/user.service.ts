@@ -54,6 +54,7 @@ export class UserService {
     user.fname = createUserDto.fname;
     user.lname = createUserDto.lname;
     user.address = createUserDto.address;
+    user.avator = createUserDto.avator;
     user.invited_by_code = createUserDto.invited_by_code || '';
     user.invite_code = generateRandomCode(8);
     user.status = 1;
@@ -100,9 +101,10 @@ export class UserService {
       throw new Error('token is required');
     }
     try {
-      const { account, role, fname, lname, address, invite_code, uid } = await this.usersRepository.findOneBy({ uid: id });
+      const { account, avator, role, fname, lname, address, invite_code, uid } = await this.usersRepository.findOneBy({ uid: id });
       return {
         account,
+        avator,
         role,
         fname,
         lname,

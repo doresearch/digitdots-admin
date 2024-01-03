@@ -1,6 +1,8 @@
 export class CreateUserDto {
   uid: number;
 
+  avator: string;
+
   role: 1 | 2 | 3;
 
   account: string;
