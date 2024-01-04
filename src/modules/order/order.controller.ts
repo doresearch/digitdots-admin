@@ -9,7 +9,7 @@ export class OrderController {
 
   // 预下单.
   // 锁会议 metting x -> 5min
-  @Post('/createOrder')
+  @Post('/preCreateOrder')
   preOrder(@Body() body) {
     return wrapperResponse(this.orderService.preCreateOrder(body), 'Meeting created successfully'); // 会议创建成功
   }

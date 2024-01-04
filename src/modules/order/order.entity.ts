@@ -23,6 +23,12 @@ export class Order {
   @Column('double', { comment: '价格' })
   price: number;
 
+  @Column('varchar', { length: 48, default: '', comment: '支付订单' })
+  payment_order: string;
+
+  @Column('int', { default: 1, comment: '支付类型; 1: PayPal' })
+  payment_type: string;
+
   @Column('int', { comment: '状态: 0 - 无效; 1 - 有效' })
   status: number;
 

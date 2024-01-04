@@ -12,6 +12,11 @@ const baseURL = {
   production: 'https://api-m.paypal.com',
 };
 
+enum PaypalOrderStatus {
+  CREATED = 'CREATED',
+  COMPLETED = 'COMPLETED',
+}
+
 export class OrderService {
   constructor(
     @InjectRepository(Order)
@@ -201,7 +206,7 @@ export class OrderService {
   }
 
   async buy(body) {
-    const { order_id } = body;
+    const { order_id, payment_order } = body;
 
     const now = Date.now().toString();
     const orderStatus = 1001;
@@ -213,6 +218,8 @@ export class OrderService {
           .set({
             order_status: orderStatus,
             order_time: now,
+            payment_order,
+            payment_type: 1,
           })
           .where('order_id = :order_id', { order_id })
           .execute();
@@ -243,7 +250,6 @@ export class OrderService {
     }
   }
 
-  // use the orders api to create an order
   async createOrder(body) {
     const accessToken = await this.getAccessToken();
     if (!accessToken) {
@@ -254,12 +260,12 @@ export class OrderService {
     const orderId = cart[0].sku;
 
     const order = await this.orderRepository.findOneBy({ order_id: orderId });
- 
+
     if (!order) {
       throw new Error(`Order ${orderId} not found`);
     }
-  
-    if (!(order.status === 1 && order.order_status === 1000)) {
+
+    if (!(order.status === 1 && [1000, 1001].includes(order.order_status))) {
       throw new Error('Invalid order'); // 订单无效
     }
 
@@ -297,12 +303,91 @@ export class OrderService {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      await this.buy({ order_id: orderId });
-      console.log(response);
+      await this.buy({ order_id: orderId, payment_order: response.data.id });
       return response.data;
     } catch (error) {
       console.log(error);
       throw new Error('Failed to create the order.' + error.message);
+    }
+  }
+
+  async paymentSuccessful(paymentOrder, orderStatus: 2001) {
+    const now = Date.now().toString();
+    try {
+      const order = await this.orderRepository.findOneBy({ payment_order: paymentOrder });
+      await this.orderRepository.manager.transaction(async transactionalEntityManager => {
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .update(Order)
+          .set({
+            order_status: orderStatus,
+            order_time: now,
+          })
+          .where('order_id = :order_id', { order_id: order.order_id })
+          .execute();
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .update(Meeting)
+          .set({
+            order_status: 2,
+          })
+          .where('meeting_id = :meeting_id', { meeting_id: order.meeting_id })
+          .execute();
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .insert()
+          .into(QuickOrder)
+          .values({
+            order_id: order.order_id,
+            order_status: orderStatus,
+            order_text: 'Payment successful',
+          })
+          .execute();
+      });
+
+      return {
+        order_id: order.order_id,
+        order_time: now,
+        order_status: orderStatus,
+      };
+    } catch (error) {
+      throw new Error('Order payment failed'); // 订单支付失败
+    }
+  }
+
+  async paymentFailed(paymentOrder, orderStatus: 2002) {
+    const now = Date.now().toString();
+    try {
+      const order = await this.orderRepository.findOneBy({ payment_order: paymentOrder });
+      await this.orderRepository.manager.transaction(async transactionalEntityManager => {
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .update(Order)
+          .set({
+            order_status: orderStatus,
+            order_time: now,
+          })
+          .where('order_id = :order_id', { order_id: order.order_id })
+          .execute();
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .insert()
+          .into(QuickOrder)
+          .values({
+            order_id: order.order_id,
+            order_status: orderStatus,
+            order_text: 'Payment failed',
+          })
+          .execute();
+      });
+
+      return {
+        order_id: order.order_id,
+        order_time: now,
+        order_status: orderStatus,
+      };
+    } catch (error) {
+      throw new Error('Order payment failed'); // 订单支付失败
     }
   }
 
@@ -312,19 +397,29 @@ export class OrderService {
       throw new Error('Failed to get access token');
     }
 
-    const { id } = body;
-    if (!id) {
-      throw new Error('Not Id')
+    const { orderID } = body;
+    if (!orderID) {
+      throw new Error('Not orderID');
     }
 
     try {
-      const response = await axios.post(`${baseURL.sandbox}/v2/checkout/orders/${id}/capture`, {}, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      console.log(response);
+      const response = await axios.post(
+        `${baseURL.sandbox}/v2/checkout/orders/${orderID}/capture`,
+        {},
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const { id, status } = response.data;
+      if (status === PaypalOrderStatus.COMPLETED) {
+        await this.paymentSuccessful(orderID, 2001);
+        return response.data;
+      }
+
+      await this.paymentFailed(orderID, 2002);
       return response.data;
     } catch (error) {
       console.log(error);
