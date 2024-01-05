@@ -11,8 +11,14 @@ export class Order {
   @Column('int', { comment: '0 - 未push,1-已push' })
   push_status: number;
 
-  @Column('varchar', { length: 13, comment: '订单时间, 格式时间戳' })
+  @Column('varchar', { length: 13, comment: '预下单时间, 格式时间戳' })
   order_time: string;
+
+  @Column('varchar', { length: 13, default: '', comment: '创建支付单时间, 格式时间戳' })
+  create_pay_order_time: string;
+
+  @Column('varchar', { length: 13, default: '', comment: '支付时间, 格式时间戳' })
+  payment_order_time: string;
 
   @Column('varchar', { length: 48, comment: '购买用户的id' })
   student_id: string;
@@ -20,13 +26,22 @@ export class Order {
   @Column('varchar', { length: 48, comment: '下单的会议' })
   meeting_id: string;
 
+  @Column('varchar', { length: 48 })
+  meeting_teacher_id: string;
+
+  @Column('varchar', { length: 45 })
+  meeting_teacher_fname: string;
+
+  @Column('varchar', { length: 45 })
+  meeting_teacher_lname: string;
+
   @Column('double', { comment: '价格' })
   price: number;
 
   @Column('varchar', { length: 48, default: '', comment: '支付订单' })
   payment_order: string;
 
-  @Column('int', { default: 1, comment: '支付类型; 1: PayPal' })
+  @Column('int', { default: 0, comment: '支付类型; 1: PayPal' })
   payment_type: string;
 
   @Column('int', { comment: '状态: 0 - 无效; 1 - 有效' })

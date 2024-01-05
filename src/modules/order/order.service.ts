@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './order.entity';
 import { Meeting } from '../meeting/meeting.entity';
 import { QuickOrder } from './quick-order.entity';
+import { User } from '../user/user.entity';
 import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const schedule = require('node-schedule');
@@ -17,6 +18,16 @@ enum PaypalOrderStatus {
   COMPLETED = 'COMPLETED',
 }
 
+enum OrderStatus {
+  preOrder = 1000,
+  createOrder = 1001,
+  cancelOrder = 1002,
+  paymentSuccessful = 2001,
+  paymentFailed = 2002,
+  tradeSuccessful = 3001,
+  tradeFailed = 3002,
+}
+
 export class OrderService {
   constructor(
     @InjectRepository(Order)
@@ -24,7 +35,9 @@ export class OrderService {
     @InjectRepository(Meeting)
     private readonly meetingRepository: Repository<Meeting>,
     @InjectRepository(QuickOrder)
-    private readonly quickOrderRepository: Repository<QuickOrder>
+    private readonly quickOrderRepository: Repository<QuickOrder>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>
   ) {}
 
   private accessTokenTime: number = 0;
@@ -44,10 +57,9 @@ export class OrderService {
   }
 
   async getOrderInfoByOrderId(order_id: string) {
-    const sql = `SELECT o.order_id, o.order_status, o.order_time, o.price, m.meeting_id, m.teacher_id, m.order_time meeting_time, u.fname, u.lname
+    const sql = `SELECT o.order_id, o.order_status, o.order_time, o.price, o.meeting_teacher_id, o.meeting_teacher_fname, o.meeting_teacher_lname, o.meeting_id, m.order_time meeting_time
     FROM \`order\` o
     JOIN meeting m ON o.meeting_id = m.meeting_id
-    JOIN user u ON m.teacher_id = u.uid
     WHERE o.order_id = '${order_id}'`;
     try {
       const data = await this.orderRepository.query(sql);
@@ -59,11 +71,10 @@ export class OrderService {
 
   async getOrderList(uid) {
     if (!uid) throw new Error('uid is empty');
-    const sql = `SELECT o.order_id, o.order_status, o.order_time, o.price, m.meeting_id, m.teacher_id, m.order_time meeting_time, u.fname, u.lname
+    const sql = `SELECT o.order_id, o.order_status, o.order_time, o.price, o.meeting_teacher_id, o.meeting_teacher_fname, o.meeting_teacher_lname, o.meeting_id, m.order_time meeting_time
     FROM \`order\` o
     JOIN meeting m ON o.meeting_id = m.meeting_id
-    JOIN user u ON o.student_id = u.uid
-    WHERE u.uid = '${uid}'`;
+    WHERE o.student_id = '${uid}'`;
     try {
       const data = await this.orderRepository.query(sql);
       return data;
@@ -72,7 +83,7 @@ export class OrderService {
     }
   }
 
-  async cancelOrder(order_id: string, orderStatus: 1002 | 2002) {
+  async cancelOrder(order_id: string, orderStatus: OrderStatus.cancelOrder | OrderStatus.paymentFailed) {
     const order = await this.orderRepository.findOneBy({ order_id });
     if (!order) {
       throw new Error('Order not found');
@@ -113,16 +124,26 @@ export class OrderService {
     if (!findMeeting) {
       throw new Error('Meeting not found'); // 会议不存在
     }
-    if (findMeeting.status !== 1) {
+    if (findMeeting.status !== 2) {
       throw new Error('Invalid meeting'); // 会议无效
     }
     if (findMeeting.order_status === 1) {
       throw new Error('Meeting already scheduled'); // 会议已预定
     }
 
+    const studentInfo = await this.userRepository.findOneBy({ uid, status: 1 });
+    if (!studentInfo) {
+      throw new Error('Student not found'); // 学生不存在
+    }
+
+    const meetingCreator = await this.userRepository.findOneBy({ uid: findMeeting.teacher_id, status: 1 });
+    if (!meetingCreator) {
+      throw new Error('Teacher not found'); // 老师不存在
+    }
+
     try {
       let order_id = '0';
-      const orderStatus = 1000;
+      const orderStatus = OrderStatus.preOrder;
       await this.orderRepository.manager.transaction(async transactionalEntityManager => {
         const now = Date.now().toString();
         const info = {
@@ -132,6 +153,9 @@ export class OrderService {
           order_time: now,
           student_id: uid,
           meeting_id,
+          meeting_teacher_id: findMeeting.teacher_id,
+          meeting_teacher_fname: meetingCreator.fname,
+          meeting_teacher_lname: meetingCreator.lname,
           price: findMeeting.price,
           status: 1,
         };
@@ -159,7 +183,7 @@ export class OrderService {
       });
       const time = new Date(Date.now() + 5 * 60 * 1000);
       schedule.scheduleJob(time, () => {
-        this.cancelOrder(order_id, 1002);
+        this.cancelOrder(order_id, OrderStatus.cancelOrder);
       });
       return {
         order_id,
@@ -209,7 +233,7 @@ export class OrderService {
     const { order_id, payment_order } = body;
 
     const now = Date.now().toString();
-    const orderStatus = 1001;
+    const orderStatus = OrderStatus.createOrder;
     try {
       await this.orderRepository.manager.transaction(async transactionalEntityManager => {
         await transactionalEntityManager
@@ -217,7 +241,7 @@ export class OrderService {
           .update(Order)
           .set({
             order_status: orderStatus,
-            order_time: now,
+            create_pay_order_time: now,
             payment_order,
             payment_type: 1,
           })
@@ -237,7 +261,7 @@ export class OrderService {
 
       const time = Date.now() + 15 * 60 * 1000;
       schedule.scheduleJob(new Date(time), () => {
-        this.cancelOrder(order_id, 2002);
+        this.cancelOrder(order_id, OrderStatus.paymentFailed);
       });
 
       return {
@@ -265,7 +289,7 @@ export class OrderService {
       throw new Error(`Order ${orderId} not found`);
     }
 
-    if (!(order.status === 1 && [1000, 1001].includes(order.order_status))) {
+    if (!(order.status === 1 && [OrderStatus.preOrder, OrderStatus.createOrder].includes(order.order_status))) {
       throw new Error('Invalid order'); // 订单无效
     }
 
@@ -311,7 +335,7 @@ export class OrderService {
     }
   }
 
-  async paymentSuccessful(paymentOrder, orderStatus: 2001) {
+  async paymentSuccessful(paymentOrder, orderStatus = OrderStatus.paymentSuccessful) {
     const now = Date.now().toString();
     try {
       const order = await this.orderRepository.findOneBy({ payment_order: paymentOrder });
@@ -321,7 +345,7 @@ export class OrderService {
           .update(Order)
           .set({
             order_status: orderStatus,
-            order_time: now,
+            payment_order_time: now,
           })
           .where('order_id = :order_id', { order_id: order.order_id })
           .execute();
@@ -355,7 +379,7 @@ export class OrderService {
     }
   }
 
-  async paymentFailed(paymentOrder, orderStatus: 2002) {
+  async paymentFailed(paymentOrder, orderStatus = OrderStatus.paymentFailed) {
     const now = Date.now().toString();
     try {
       const order = await this.orderRepository.findOneBy({ payment_order: paymentOrder });
@@ -365,7 +389,7 @@ export class OrderService {
           .update(Order)
           .set({
             order_status: orderStatus,
-            order_time: now,
+            payment_order_time: now,
           })
           .where('order_id = :order_id', { order_id: order.order_id })
           .execute();
@@ -415,11 +439,11 @@ export class OrderService {
       );
       const { id, status } = response.data;
       if (status === PaypalOrderStatus.COMPLETED) {
-        await this.paymentSuccessful(orderID, 2001);
+        await this.paymentSuccessful(orderID);
         return response.data;
       }
 
-      await this.paymentFailed(orderID, 2002);
+      await this.paymentFailed(orderID);
       return response.data;
     } catch (error) {
       console.log(error);
