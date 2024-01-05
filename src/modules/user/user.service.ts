@@ -43,7 +43,7 @@ export class UserService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<boolean> {
-    const findUser = await this.usersRepository.findOneBy({ account: createUserDto.account });
+    const findUser = await this.usersRepository.findOneBy({ account: createUserDto.account, status: 1 });
     if (findUser) {
       throw new Error('Account already exists'); // 该账户已存在
     }

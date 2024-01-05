@@ -21,14 +21,9 @@ export class MeetingService {
           .getRepository(Meeting)
           .createQueryBuilder('meeting')
           .select(['order_time', 'teacher_id', 'price', 'lock_time', 'order_status', 'user.fname', 'user.lname', 'user.school', 'user.address', 'user.major', 'price'])
-          // .addSelect('fname', 'user.fname')
-          // .addSelect('lname', 'user.lname')
-          // .addSelect('school', 'user.school')
-          // .addSelect('address', 'user.address')
-          // .addSelect('major', 'user.major')
           .where('meeting.meeting_id = :meetingId', { meetingId })
           .andWhere('meeting.order_time > :currentTime', { currentTime: Date.now() })
-          .andWhere('meeting.status = :status', { status: 1 })
+          .andWhere('meeting.status = :status', { status: 2 })
           .leftJoin('user', 'user', 'meeting.teacher_id = user.uid')
           .getRawOne();
 
@@ -55,7 +50,7 @@ export class MeetingService {
       throw new Error('老师ID不能为空');
     }
     // Todo: 已经过了的时间不查询
-    const sql = `select * from meeting WHERE status = 1 AND teacher_id='${body.teacherId}' AND order_time > ${Date.now()} order by order_time asc`;
+    const sql = `select * from meeting WHERE status IN (1, 2) AND teacher_id='${body.teacherId}' AND order_time > ${Date.now()} order by order_time asc`;
     return this.meetingRepository.query(sql);
   }
 
@@ -63,7 +58,7 @@ export class MeetingService {
     if (Array.isArray(body.teacherIds)) {
       const teacherIds = body.teacherIds.filter(item => item).map(item => `'${item}'`);
       // 多个 teacherId 查询
-      const sql = `select * from meeting WHERE status = 1 AND teacher_id IN (${teacherIds.join(',')}) AND order_time > ${Date.now()} order by order_time asc`;
+      const sql = `select * from meeting WHERE status = 2 AND teacher_id IN (${teacherIds.join(',')}) AND order_time > ${Date.now()} order by order_time asc`;
       console.log(sql);
       return this.meetingRepository.query(sql);
     } else {
@@ -131,10 +126,42 @@ export class MeetingService {
   async deleteMetting(body) {
     // Todo: lock不允许删除
     const findOne = await this.meetingRepository.findOneBy({ meeting_id: body.meetingId });
-    if (findOne.order_status === 0) {
+
+    if (findOne.order_status !== 0) {
       throw new Error('该会议已预定，不可删除');
     }
     await this.meetingRepository.update({ meeting_id: body.meetingId }, { status: 0 });
     return '删除完毕';
+  }
+
+  async getReview({ status }) {
+    return new Promise((reslove, reject) => {
+      this.meetingRepository.manager.transaction(async (entityManager: EntityManager) => {
+        const data = await entityManager
+          .getRepository(Meeting)
+          .createQueryBuilder('meeting')
+          .select(['order_time', 'teacher_id', 'price', 'lock_time', 'order_status', 'user.fname', 'user.lname', 'user.school', 'user.address', 'user.major', 'price'])
+          .addSelect('meeting.status', 'status')
+          .addSelect('meeting.meeting_id', 'meeting_id')
+          .where('meeting.status In(:status)', { status: status ? [status] : [1, 2, 3] })
+          .leftJoin('user', 'user', 'meeting.teacher_id = user.uid')
+          .getRawMany();
+
+        reslove(data);
+      });
+    });
+  }
+
+  async passReview({ meeting_id, price, status }) {
+    if (!meeting_id) {
+      throw new Error('会议ID不能为空');
+    }
+    if (!price && price !== 0) {
+      throw new Error('价格不能为空');
+    }
+
+    await this.meetingRepository.update({ meeting_id }, { status, price });
+
+    return '通过完毕';
   }
 }

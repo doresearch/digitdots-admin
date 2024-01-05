@@ -14,7 +14,7 @@ export class Meeting {
   @Column('double', { comment: '价格', default: 0 })
   price: number;
 
-  @Column('int', { comment: '状态，0 - 无效；1 - 有效', default: 1 })
+  @Column('int', { comment: '状态，0 - 无效；1 - 审核中 2 - 审核通过 3 - 审核不通过', default: 1 })
   status: number;
 
   @Column('varchar', { length: 13, comment: '格式时间戳, 下单锁定，预下单，下单', default: 0 })

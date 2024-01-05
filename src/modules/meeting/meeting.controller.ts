@@ -45,4 +45,14 @@ export class MeetingController {
   test() {
     return wrapperResponse(this.mailService.sendEmail('test', 'test', 'test'), '发送成功');
   }
+
+  @Get('/getReview')
+  getReview(@Query() body) {
+    return wrapperResponse(this.meetingService.getReview(body), '查询成功');
+  }
+
+  @Post('/passReview')
+  passReview(@Body() body) {
+    return wrapperResponse(this.meetingService.passReview(body), '查询成功');
+  }
 }
