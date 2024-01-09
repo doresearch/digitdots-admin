@@ -55,18 +55,3 @@ export class Order {
   @UpdateDateColumn({ nullable: true })
   mtime: Date | null;
 }
-
-// CREATE TABLE IF NOT EXISTS `mydb`.`order` (
-//   `order_id` INT NOT NULL,
-//   `order_status` INT(2) COMMONT '',
-//   `push_status` INT(2) COMMONT '0 - 未push,1-已push',
-//   `seller_uid` VARCHAR(13) NULL,
-//   `buyer_uid` VARCHAR(13) NULL,
-//   `meeting_id` VARCHAR(13) NULL,
-//   `price` VARCHAR(13) NULL,
-//   `status` Int(2) COMMONT '0-删除,1-有效',
-//   `ctime` VARCHAR(13) NULL,
-//   `mtime` VARCHAR(13) NULL,
-//   PRIMARY KEY (`meeting_id`))
-// ENGINE = InnoDB
-// COMMENT = '订单信息'

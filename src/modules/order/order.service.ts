@@ -13,6 +13,9 @@ const baseURL = {
   production: 'https://api-m.paypal.com',
 };
 
+const clientId = 'AacPoJJKCU-fdJ_bBA6XDwIcmn97Zjs5NZB-zSEp8EG054nqQmi4ZtESgYcyekNHOG26RxHzRHvvffWD';
+const clientSecret = 'ENn99T9RoqWG5Fkn5_VQdgYZoJkF05pg8jjsWwF-XTrX9VZJI7fO1a-klxXDLne8zXoKc2QrtqmGEgJR';
+
 enum PaypalOrderStatus {
   CREATED = 'CREATED',
   COMPLETED = 'COMPLETED',
@@ -199,8 +202,7 @@ export class OrderService {
     if (now < this.accessTokenTime) {
       return this.accessToken;
     }
-    const clientId = 'AacPoJJKCU-fdJ_bBA6XDwIcmn97Zjs5NZB-zSEp8EG054nqQmi4ZtESgYcyekNHOG26RxHzRHvvffWD';
-    const clientSecret = 'ENn99T9RoqWG5Fkn5_VQdgYZoJkF05pg8jjsWwF-XTrX9VZJI7fO1a-klxXDLne8zXoKc2QrtqmGEgJR';
+
     try {
       const response = await axios.post(
         `${baseURL.sandbox}/v1/oauth2/token`,
