@@ -5,6 +5,7 @@ import { Meeting } from '../meeting/meeting.entity';
 import { QuickOrder } from './quick-order.entity';
 import { User } from '../user/user.entity';
 import axios from 'axios';
+import { IS_DEV } from 'src/utils/const';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const schedule = require('node-schedule');
 
@@ -12,9 +13,6 @@ const baseURL = {
   sandbox: 'https://api-m.sandbox.paypal.com',
   production: 'https://api-m.paypal.com',
 };
-
-const clientId = 'AacPoJJKCU-fdJ_bBA6XDwIcmn97Zjs5NZB-zSEp8EG054nqQmi4ZtESgYcyekNHOG26RxHzRHvvffWD';
-const clientSecret = 'ENn99T9RoqWG5Fkn5_VQdgYZoJkF05pg8jjsWwF-XTrX9VZJI7fO1a-klxXDLne8zXoKc2QrtqmGEgJR';
 
 enum PaypalOrderStatus {
   CREATED = 'CREATED',
@@ -46,6 +44,7 @@ export class OrderService {
   private accessTokenTime: number = 0;
   private accessToken: string = '';
   private currencyCode: string = 'USD';
+  private paypalUrl: string = IS_DEV ? baseURL.sandbox : baseURL.production;
 
   /**
    * 美分转换美元
@@ -205,14 +204,14 @@ export class OrderService {
 
     try {
       const response = await axios.post(
-        `${baseURL.sandbox}/v1/oauth2/token`,
+        `${this.paypalUrl}/v1/oauth2/token`,
         {
           grant_type: 'client_credentials',
         },
         {
           auth: {
-            username: clientId,
-            password: clientSecret,
+            username: process.env.PAYPAL_CLIENT_ID,
+            password: process.env.PAYPAL_SECRET,
           },
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -323,7 +322,7 @@ export class OrderService {
         //   },
         // },
       });
-      const response = await axios.post(`${baseURL.sandbox}/v2/checkout/orders`, data, {
+      const response = await axios.post(`${this.paypalUrl}/v2/checkout/orders`, data, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
@@ -430,7 +429,7 @@ export class OrderService {
 
     try {
       const response = await axios.post(
-        `${baseURL.sandbox}/v2/checkout/orders/${orderID}/capture`,
+        `${this.paypalUrl}/v2/checkout/orders/${orderID}/capture`,
         {},
         {
           headers: {

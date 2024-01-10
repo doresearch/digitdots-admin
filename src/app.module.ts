@@ -15,12 +15,24 @@ import { OrderModule } from './modules/order/order.module';
 import { MailService } from './mail/mail.service';
 import { OssService } from './modules/oss/oss.service';
 import { OssModule } from './modules/oss/oss.module';
+import { ConfigModule } from '@nestjs/config';
+import { IS_DEV } from './utils/const';
 
 // const { username, password } = getMysqlUsernameAndPassword();
 const { username, password } = { username: 'root', password: '12345678' };
 
+const envFilePath = ['.env'];
+if (IS_DEV) {
+  envFilePath.unshift('.env.development');
+} else {
+  envFilePath.unshift('.env.production');
+}
+
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath,
+    }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: '127.0.0.1',
